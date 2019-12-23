@@ -598,6 +598,73 @@ class Window(Object):
             object.show()
 
 
+class Group:
+    def __init__(self):
+        self.all_objects = []
+        self.last_x, self.last_y = 0, 0
+        self.visibility = True
+
+    def add_objects(self, *objects):
+        for object in objects:
+            self.all_objects.append(object)
+
+    def off_all(self):
+        for object in self.all_objects:
+            object.visibility = False
+
+    def on_all(self):
+        for object in self.all_objects:
+            object.visibility = True
+
+    def check(self, event):
+        if not self.visibility:
+            return
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            x, y = event.pos
+            self.last_x, self.last_y = x, y
+            for object in self.all_objects:
+                if isinstance(object, Button):
+                    if object.check_tip(x, y):
+                        object.status = True
+
+                if isinstance(object, Window):
+                    if event.button == 5:  # скрол вниз
+                        if object.check_tip(x, y) and object.visibility:
+                            object.pag(object.shift_y - 50)
+                    if event.button == 4:  # скрол вверх
+                        if object.check_tip(x, y) and object.visibility:
+                            object.pag(object.shift_y + 50)
+                    if event.button == 1:  # левое нажатие мыши
+                        if object.check_tip(x, y) and object.visibility:
+                            object.paging = True
+
+
+        if event.type == pygame.MOUSEBUTTONUP:
+            x, y = event.pos
+            for object in self.all_objects:
+                if isinstance(object, Button):
+                    if object.status and object.check_tip(x, y):
+                        object.click()
+                    object.status = False
+
+                if isinstance(object, Window):
+                    object.paging = False
+
+        if event.type == pygame.MOUSEMOTION:
+            x, y = event.pos
+            shift_x = self.last_x - x
+            shift_y = self.last_y - y
+            self.last_x, self.last_y = x, y
+            for object in self.all_objects:
+                if isinstance(object, Window):
+                    if object.paging:
+                        object.pag(object.shift_y - shift_y)
+
+    def show(self):
+        for object in self.all_objects:
+            object.show()
+
+
 class Player:
     def __init__(self, canvas,  x, y, game_time):
         self.canvas = canvas
