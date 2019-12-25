@@ -591,9 +591,10 @@ class Window(Object):
             object.move_to(object.x, y)
 
     def render(self):
-        self.show()
         if not self.visibility:
             return
+        if self.image is not None:
+            self.show()
         for object in self.objects:
             object.show()
 
@@ -885,13 +886,14 @@ class Player:
 
 
 class Thing(Button):
-    def __init__(self, canvas, id, con, count, strength, font=None):
+    def __init__(self, canvas, id, con, count, strength, w=ps_width(8.9), font=None):
         self.canvas = canvas
         self.count = count
         self.font = font
         self.x = 0
         self.y = 0
         self.visibility = True
+        self.text_visibility = True
 
         cur = con.cursor()
         query = f'''SELECT * FROM things
@@ -918,7 +920,7 @@ class Thing(Button):
         self.effect_radiation_ps = int(result[16])
         self.effect_light = int(result[17])
         self.expenses = result[18]
-        w = ps_width(8.9)
+        w = w
         h = w
         self.image = get_free_image(result[19], (w, h))
         self.width = w
@@ -936,8 +938,9 @@ class Thing(Button):
 
         self.canvas.blit(self.image, (self.x, self.y))
         if self.font is not None:
-            text = self.font.render(str(self.count), 1, BLACK)
-            self.canvas.blit(text, (self.x + self.width - ps_width(4),
+            if self.text_visibility:
+                text = self.font.render(str(self.count), 1, BLACK)
+                self.canvas.blit(text, (self.x + self.width - ps_width(4),
                                     self.y + self.height - ps_height(4)))
 
 
@@ -957,7 +960,6 @@ class Inventory:
             all_thinks = []
         elif mod == 1:
             all_thinks = parametrs.split('</>')[1].split(', ')
-            x = all_thinks[0].split()
             if all_thinks == ['\n']:
                 all_thinks = []
         else:
@@ -968,34 +970,52 @@ class Inventory:
                 separator = ':'
 
 
-        self.all_thinks = self.convert_thinks_to_object(all_thinks, separator)
+        self.all_thinks = self.convert_thinks_to_object(all_thinks, separator, w=ps_width(8.9))
         self.showing_thinks = self.all_thinks
 
-        x = ps_width(2)
+        x = ps_width(2) + 2
         y = ps_height(28.51)
         w = ps_width(44.1)
         h = ps_height(56.8)
 
         image = get_bg_for_thinks_in_inventory((w, h))
-        self.window = Window(canvas, image, x + 2, y, w, h, 5)
+        self.window = Window(canvas, image, x, y, w, h, 5)
         self.window.visibility = True
         self.window.width_object = ps_width(8.9)
         for think in self.showing_thinks:
             self.window.add_object(think)
 
-    def convert_thinks_to_object(self, all_thinks, sep=';'):
+        x = ps_width(50.5)
+        y = ps_height(10)
+        w = ps_width(50.1)
+        h = ps_height(20)
+        self.cane_find_window = Window(canvas, None, x, y, w, h, 6)
+        self.cane_find_window.width_object = ps_width(5)
+
+
+    def convert_thinks_to_object(self, all_thinks, sep=';', w=50):
         ready_thinks = []
-        font = pygame.font.Font(None, ps_height(5))
+        font = pygame.font.Font(None, int(w // 2.7))
         self.heft = 0
         for think in all_thinks:
-            id, count, strength = think.split(sep)
-            if sep == ':':
-                strength = strength.split('</>')[0]
-            think = Thing(self.canvas, id, self.con, count, strength, font)
-            self.heft += think.heft * int(count)
+            if 'NONE' not in think:
+                id, count, strength = think.split(sep)
+                if sep == ':':
+                    strength = strength.split('</>')[0]
+                think = Thing(self.canvas, id, self.con, count, strength, w, font)
+                self.heft += think.heft * int(count)
 
-            ready_thinks.append(think)
+                ready_thinks.append(think)
         return ready_thinks
+
+    def update_cane_find(self, call):
+        self.cane_find_window.objects = []
+        can_find = call.can_find
+        if 'NONE' in can_find:
+            return
+        for think in self.convert_thinks_to_object(call.can_find.split(';'), ':', ps_width(5)):
+            think.text_visibility = False
+            self.cane_find_window.add_object(think)
 
     def update_thinks(self, all_thinks):
         self.all_thinks = all_thinks
@@ -1024,6 +1044,7 @@ class Inventory:
         if self.visibility:
             self.window.render()
             self.canvas.blit(self.bg_image, (0, ps_height(5.6)))
+            self.cane_find_window.render()
 
 
 class GameTime:
@@ -1066,5 +1087,4 @@ class GameTime:
     def show(self):
         text = self.font.render(self.get_string_of_time(), 1, LIGHT_GREEN)
         self.canvas.blit(text, (ps_width(44), ps_height(91)))
-
 
