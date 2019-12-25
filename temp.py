@@ -147,8 +147,6 @@ def change_inventory_type_to_location(*args):
     location.visibility = True
 
 
-
-
 def opening_quests(*args):
     global type_window
     player.stop()
