@@ -26,7 +26,26 @@ def start_new_game(*args):
 21;30;0, 33;5;720, 26;2;0, 25;1;0, 28;1;19000, 4;40;0</>'''
     description_player.write(text)
     description_player.close()
+    show_starting_slides(3)
     start()
+
+
+def show_starting_slides(number):
+    count = 2
+    image = get_free_image("images\start_slides\start_slide_1.bmp", (width, height))
+    start_slide = Object(screen, image, 0, 0, width, height)
+    start_slide.show()
+    pygame.display.flip()
+    while count <= number + 1:
+        for event in pygame.event.get():
+            if 1 in pygame.key.get_pressed() or event.type == pygame.MOUSEBUTTONDOWN:
+                if count <= number:
+                    slide_name = "images\start_slides\start_slide_" + str(count) + ".bmp"
+                    image = get_free_image(slide_name, (width, height))
+                    start_slide = Object(screen, image, 0, 0, width, height)
+                    start_slide.show()
+                count += 1
+            pygame.display.flip()
 
 
 def continue_game(*args):
@@ -111,6 +130,7 @@ def start(*args):
 
     type_window = 'main'
 
+
 def show_and_change_all_options():
     texts_of_options_player[0].text = int(player.exhaustion)
     texts_of_options_player[1].text = int(player.hunger)
@@ -147,8 +167,6 @@ def change_inventory_type_to_location(*args):
     location.visibility = True
 
 
-
-
 def opening_quests(*args):
     global type_window
     player.stop()
@@ -176,7 +194,7 @@ def open_map(*args):
     type_window = 'main'
 
 
-def update_map():   # сдвинуть отображаемую облость карты
+def update_map():  # сдвинуть отображаемую облость карты
     global image_map, zoom_images, map_x_on_main_map, map_y_on_main_map
 
     last_map_x, last_map_y = map_x_on_main_map, map_y_on_main_map
@@ -238,12 +256,12 @@ def create_all_objects():
     image = get_btn_start_main((200, 50))
     image_2 = get_btn_start_main_click((200, 50))
     btn_continue_game_main = Button(screen, image, width / 2 - 100, height / 2 + 200,
-                           200, 50, continue_game, image_2)
+                                    200, 50, continue_game, image_2)
 
     image = get_image_btn_new_start_main((200, 50))
     image_2 = get_image_btn_new_start_main_click((200, 50))
     btn_start_new_main = Button(screen, image, width / 2 - 100, height / 2 + 100,
-                            200, 50, start_new_game, image_2)
+                                200, 50, start_new_game, image_2)
 
     image = get_pygame_image(image_map)
     main_map = Object(screen, image, map_x, map_y, 3906 * zoom, 2047 * zoom)
@@ -289,13 +307,11 @@ def create_all_objects():
     btn.add_function(opening_inventory)
     objects_map.add_objects(btn)
 
-
     file = open('map/description_map.txt', 'r')
     font = pygame.font.Font(None, zoom * 10)
     BOARD_MAP = Board(screen, 3906 // size_cell, 2047 // size_cell, font,
                       size_cell, parametrs=file.read())
     zoom_images = [None for i in range(6)]
-
 
     texts_of_options_player = []
     font = pygame.font.Font(None, ps_width(2.5))
@@ -329,8 +345,6 @@ def create_all_objects():
     btn_searching.add_function(searching_on_call)
 
 
-
-
 FPS = 100
 ratio = 3 / 5
 zoom = 2
@@ -340,7 +354,6 @@ size_cell = 10
 old_mouse_x, old_mouse_y = 0, 0
 map_x, map_y = 0, 0
 BOARD_MAP = None
-
 
 player_x, player_y = 0, 0
 width_map, height_map = 900, 900
@@ -358,8 +371,8 @@ main_map = None
 
 main_image_map = get_map((3906, 2047), 1)
 image_map = cat_image(main_image_map, (map_x_on_main_map, map_y_on_main_map,
-                      3906 - width_map - map_x_on_main_map,
-                      2047 - height_map - map_y_on_main_map))
+                                       3906 - width_map - map_x_on_main_map,
+                                       2047 - height_map - map_y_on_main_map))
 
 objects_main = Group()
 objects_map = Group()
@@ -427,13 +440,13 @@ while running:
                     else:
                         update_image_map()
 
-                if event.button == 4:   # скрол вверх
+                if event.button == 4:  # скрол вверх
                     zoom += 1
                     if zoom > len(zoom_images) - 1:
                         zoom = len(zoom_images) - 1
                     else:
                         update_image_map()
-                if event.button == 1:   # левое нажатие мыши
+                if event.button == 1:  # левое нажатие мыши
                     if time.time() - timer_between_clicks < 0.3:
                         new_x = ((x - map_x) / zoom_images[zoom][2]) + map_x_on_main_map
                         new_y = ((y - map_y) / zoom_images[zoom][2]) + map_y_on_main_map
@@ -456,13 +469,12 @@ while running:
                     if location.window.check_tip(x, y) and location.visibility:
                         location.window.pag(location.window.shift_y + 50)
 
-                if event.button == 1:   # левое нажатие мыши
+                if event.button == 1:  # левое нажатие мыши
                     if inventory.window.check_tip(x, y) and inventory.visibility:
                         inventory.window.paging = True
                 if event.button == 1:
                     if location.window.check_tip(x, y) and location.visibility:
                         location.window.paging = True
-
 
         if event.type == pygame.MOUSEBUTTONUP:
             x, y = event.pos
@@ -493,7 +505,7 @@ while running:
                     map_x = 0
                 if map_y > 0:
                     map_y = 0
-                image_size= main_map.image.get_size()
+                image_size = main_map.image.get_size()
                 if map_x < -image_size[0] + width:
                     map_x = -image_size[0] + width
                 if map_y < -image_size[1] + height:
@@ -513,7 +525,7 @@ while running:
         main_map.show()
         player.show(map_x_on_main_map, map_y_on_main_map, map_x, map_y, zoom_images[zoom][2])
 
-        if player.moving:   # сдвигает игрока на расчитаные по времени координаты
+        if player.moving:  # сдвигает игрока на расчитаные по времени координаты
             player.made_step()
             call = BOARD_MAP.get_call_in_bord((player.x, player.y))
             if call is not None:
@@ -528,7 +540,6 @@ while running:
                     if (player_x_on_map < 50 or player_y_on_map < 50 or
                             player_x_on_map > width_map - 150 or player_y_on_map > height_map - 150):
                         update_map()
-
 
     if type_window == 'inventory':
         inventory.show()
