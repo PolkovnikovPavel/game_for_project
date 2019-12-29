@@ -160,6 +160,16 @@ def get_image_btn_new_start_main_click(size):
     return image
 
 
+def get_image_bg_for_function(size):
+    image = Image.open('images/bg_for_function.png')
+    image = image.resize(size, Image.ANTIALIAS)
+
+    mode = image.mode
+    data = image.tobytes()
+    image = pygame.image.fromstring(data, size, mode)
+    return image
+
+
 def get_image_btn_inventory_on_location(size):
     image = Image.open('images/btn_inventory_on_location.png')
     image = image.resize(size, Image.ANTIALIAS)
