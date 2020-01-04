@@ -39,9 +39,8 @@ def continue_game(*args):
 def searching_on_call(*args):
     call = BOARD_MAP.get_call_in_bord((player.x, player.y))
     call.find_things()
-    location.update_thinks(location.convert_thinks_to_object(call.lies.split(';'), ':', ps_width(8.9)))
+    location.update_thinks(location.convert_thinks_to_object(call.lies.split(';'), ':', ps_width(8.9), call=call))
     location.update_cane_find(call)
-
 
 def save():
     description_player = open('data/SaveGame.txt', 'w')
@@ -97,7 +96,7 @@ def start(*args):
     main_map.visibility = True
     player.set_parametrs(open_file())
 
-    inventory = Inventory(screen, None, player, parametrs=open_file())
+    inventory = Inventory(screen, None, player)
     inventory.bg_image = get_bg_for_inventory((width, ps_height(83.2)))
 
     file = open('map/description_map.txt', 'r')
@@ -105,24 +104,29 @@ def start(*args):
     BOARD_MAP = Board(screen, 3906 // size_cell, 2047 // size_cell, font,
                       size_cell, parametrs=file.read())
     call = BOARD_MAP.get_call_in_bord((player.x, player.y))
-    location = Inventory(screen, None, player, parametrs=call.get_text_for_save(), mod=2)
+    location = Inventory(screen, None, player, mod=2)
     location.bg_image = get_bg_for_inventory((width, ps_height(83.2)))
 
+    inventory.initialization(open_file(), inventory, location, call=call, BOARD_MAP=BOARD_MAP)
+    location.initialization(call.get_text_for_save(), inventory, location, call=call, BOARD_MAP=BOARD_MAP)
+
     update_map()
+    update_image_map()
 
     type_window = 'main'
 
 
 def show_and_change_all_options():
-    texts_of_options_player[0].text = int(player.exhaustion)
-    texts_of_options_player[1].text = int(player.hunger)
-    texts_of_options_player[2].text = int(player.water)
-    texts_of_options_player[3].text = int(player.poison)
-    texts_of_options_player[4].text = int(player.radiation)
-    texts_of_options_player[5].text = int(player.energy)
-    texts_of_options_player[6].text = inventory.get_ps_of_load()
-    texts_of_options_player[7].text = int(player.bleeding)
-    texts_of_options_player[8].text = player.temperature
+    texts_of_options_player[0].change_text(int(player.exhaustion))
+    texts_of_options_player[1].change_text(int(player.hunger))
+    texts_of_options_player[2].change_text(int(player.water))
+    texts_of_options_player[3].change_text(int(player.poison))
+    texts_of_options_player[4].change_text(int(player.radiation))
+    texts_of_options_player[5].change_text(int(player.energy))
+    texts_of_options_player[6].change_text(inventory.get_ps_of_load())
+    texts_of_options_player[7].change_text(int(player.bleeding))
+    texts_of_options_player[8].change_text(player.temperature)
+
     for text in texts_of_options_player:
         text.show()
 
@@ -131,6 +135,9 @@ def opening_inventory(*args):
     global type_window
     inventory.visibility = True
     location.visibility = False
+    inventory.hide_all_function()
+    location.hide_all_function()
+
     player.stop()
     type_window = 'inventory'
 
@@ -140,18 +147,16 @@ def change_inventory_type_to_location(*args):
     player.stop()
     type_window = 'inventory'
     inventory.visibility = False
+    inventory.hide_all_function()
 
     call = BOARD_MAP.get_call_in_bord((player.x, player.y))
     location.update_cane_find(call)
     if 'NONE' not in call.lies:
-        location.update_thinks(location.convert_thinks_to_object(call.lies.split(';'), ':', ps_width(8.9)))
+        location.update_thinks(location.convert_thinks_to_object(call.lies.split(';'), ':', ps_width(8.9), call=call))
     else:
-        location.update_thinks(location.convert_thinks_to_object([]))
-
+        location.update_thinks(location.convert_thinks_to_object([], call=call))
     location.visibility = True
-
-
-
+    location.hide_all_function()
 
 def opening_quests(*args):
     global type_window
@@ -224,7 +229,8 @@ def update_image_map():
                              (int(width_map * new_zoom), int(height_map * new_zoom)))
         image = get_pygame_image(image)
 
-        zoom_images[zoom] = (image, int(size_cell * new_zoom), new_zoom)
+        zoom_images[zoom] = (image, size_cell * new_zoom, new_zoom)
+    BOARD_MAP.image_mark = get_mark_for_map((int(zoom_images[zoom][1]), int(zoom_images[zoom][1])))
     main_map.change_image(image)
 
 
@@ -294,11 +300,16 @@ def create_all_objects():
     objects_map.add_objects(btn)
 
     file = open('map/description_map.txt', 'r')
+    i = file.read()
     font = pygame.font.Font(None, zoom * 10)
     BOARD_MAP = Board(screen, 3906 // size_cell, 2047 // size_cell, font,
-                      size_cell, parametrs=file.read())
+                      size_cell, parametrs=i)
     zoom_images = [None for i in range(6)]
 
+    call = BOARD_MAP.get_call_in_bord((player.x, player.y))
+
+    inventory.initialization(open_file(), inventory, location, call=call, BOARD_MAP=BOARD_MAP)
+    location.initialization(call.get_text_for_save(), inventory, location, call=call, BOARD_MAP=BOARD_MAP)
 
     texts_of_options_player = []
     font = pygame.font.Font(None, ps_width(2.5))
@@ -330,8 +341,6 @@ def create_all_objects():
     image = get_image_btn_search((ps_width(14), ps_height(5)))
     btn_searching = Button(screen, image, ps_width(60), ps_height(50), ps_width(14), ps_height(5))
     btn_searching.add_function(searching_on_call)
-
-
 
 
 FPS = 100
@@ -416,6 +425,8 @@ while running:
                 objects_map.check(event)
             if type_window == 'inventory':
                 objects_inventory.check(event)
+                inventory.check(event)
+                location.check(event)
                 if location.visibility and btn_searching.check_tip(x, y):
                     btn_searching.status = True
 
@@ -476,13 +487,11 @@ while running:
                 objects_map.check(event)
             if type_window == 'inventory':
                 objects_inventory.check(event)
+                inventory.check(event)
+                location.check(event)
                 if location.visibility and btn_searching.check_tip(x, y):
                     btn_searching.click()
                     btn_searching.status = False
-
-            inventory.window.paging = False
-            location.window.paging = False
-            moving_map = False
 
             inventory.window.paging = False
             location.window.paging = False
@@ -520,6 +529,8 @@ while running:
 
     if type_window == 'main':
         main_map.show()
+        BOARD_MAP.show_all_marks(zoom_images[zoom][1], map_x - (map_x_on_main_map * zoom_images[zoom][2]),
+                                 map_y - (map_y_on_main_map * zoom_images[zoom][2]))
         player.show(map_x_on_main_map, map_y_on_main_map, map_x, map_y, zoom_images[zoom][2])
 
         if player.moving:   # сдвигает игрока на расчитаные по времени координаты
@@ -530,13 +541,15 @@ while running:
                 player.check_condition(call)
 
                 if not player.moving:
-                    # вызывается если игрок остановился после
+                    # выполняется если игрок остановился после
                     # своего последнего шага
                     player_x_on_map = player.x - map_x_on_main_map
                     player_y_on_map = player.y - map_y_on_main_map
                     if (player_x_on_map < 50 or player_y_on_map < 50 or
                             player_x_on_map > width_map - 150 or player_y_on_map > height_map - 150):
                         update_map()
+                    location.update_call(call)
+                    inventory.update_call(call)
 
 
     if type_window == 'inventory':
@@ -552,7 +565,6 @@ while running:
         show_and_change_all_options()
         game_time.show()
         game_time.update_time_on_real_time()
-
     pygame.display.flip()
 
 pygame.quit()

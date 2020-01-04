@@ -202,6 +202,16 @@ def get_map(size, mod=0):
     return map
 
 
+def get_mark_for_map(size, mod=0):
+    image = Image.open('images/mark_for_map.png')
+    image = image.resize(size, Image.ANTIALIAS)
+    if mod == 1:
+        return image
+    mode = image.mode
+    data = image.tobytes()
+    image = pygame.image.fromstring(data, size, mode)
+    return image
+
 
 def cat_image(img, border):
     img = ImageOps.crop(img, border)

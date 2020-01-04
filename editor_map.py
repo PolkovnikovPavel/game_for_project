@@ -1,7 +1,7 @@
 import pygame
 import os
-from game.System import *
-from game.images.images import *
+from System import *
+from images.images import *
 
 
 def exit(*args):

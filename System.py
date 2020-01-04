@@ -1,9 +1,5 @@
-import time
-import sqlite3
-from images.images import *
-import sqlite3
-import time
 
+import sqlite3, time, copy
 from images.images import *
 
 WHITE = (255, 255, 255)
@@ -307,13 +303,21 @@ class Text(Object):
         self.canvas = canvas
         self.x = x
         self.y = y
-        self.text = text
+        self.text = str(text)
         self.font = font
+        self.color = WHITE
         self.visibility = True
 
+    def change_text(self, new_text):
+        self.text = str(new_text)
+
     def show(self):
-        text = self.font.render(str(self.text), 1, WHITE)
-        self.canvas.blit(text, (self.x, self.y))
+        if not self.visibility:
+            return
+        texts = str(self.text).split('\n')
+        for i in range(len(texts)):
+            text = self.font.render(texts[i], 1, self.color)
+            self.canvas.blit(text, (self.x, int(self.y + i * ps_height(2))))
 
 
 class Button(Object):
@@ -404,7 +408,6 @@ class Call:
         lies = []
         all_things_ling = {}
         all_things_can_find = {}
-        #new_things = {}
         if 'NONE' in self.lies:
             all_things_ling = {}
         else:
@@ -463,6 +466,11 @@ class Call:
 '''
         return text
 
+    def show_mark(self, image, x, y):
+        if image is None:
+            return
+        self.canvas.blit(image, (x, y))
+
     def draw(self, x, y, font):
         if not self.visibility or x < 0 or y < 0 or x > 1700 or y > 1000:
             return
@@ -482,6 +490,7 @@ class Board:
         if parametrs is not None:
             parametrs = parametrs.split('</>')
 
+        self.board_with_marks = []
         self.board = []
         for j in range(height):
             self.board.append([])
@@ -491,9 +500,12 @@ class Board:
                     index = j * width + i
                     param = parametrs[index]
                 self.board[j].append(Call(canvas, i, j, cell_size, parametrs=param))
+                if self.board[j][i].lies != 'NONE':
+                    self.board_with_marks.append(self.board[j][i])
         self.left = 0
         self.top = 0
         self.cell_size = cell_size
+        self.image_mark = None
 
     def set_move(self, left, top):
         self.left = left
@@ -504,6 +516,12 @@ class Board:
         for i in range(self.height):
             for j in range(self.width):
                 self.board[i][j].size = new_size
+
+    def show_all_marks(self, size_call, left, top):
+        for call in self.board_with_marks:
+            x = call.x * size_call + left
+            y = call.y * size_call + top
+            call.show_mark(self.image_mark, x, y)
 
     def render(self):
         if not self.visibility:
@@ -558,17 +576,79 @@ class Window(Object):
         self.objects = []
         self.shift_y = y
         self.width_object = 70
+        self.last_x, self.last_y = 0, 0
+
+    def show_all(self):
+        for object in self.objects:
+            object.visibility = True
+
+    def hide_all(self):
+        for object in self.objects:
+            object.visibility = False
+
+    def delete_all_objects(self):
+        self.objects = []
 
     def add_object(self, object):
         object.visibility = self.visibility
-        if len(self.objects) % self.column_count == 0:
-            x = self.x + 5
-        else:
-            x = self.x + 5 + self.width // self.column_count
+        #if len(self.objects) % self.column_count == 0:
+        #    x = self.x + 5
+        #else:
+        #    x = self.x + 5 + self.width // self.column_count
         x = (len(self.objects) - ((len(self.objects) // self.column_count) * self.column_count)) * (self.width // self.column_count) + self.x
         y = (len(self.objects) // self.column_count) * self.width_object + self.shift_y
         object.move_to(x, y)
         self.objects.append(object)
+
+    def check(self, event):
+        if not self.visibility:
+            return
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            x, y = event.pos
+            self.last_x, self.last_y = x, y
+            for object in self.objects:
+                if isinstance(object, Button):
+                    if object.check_tip(x, y):
+                        object.status = True
+
+                if isinstance(object, Function):
+                    object.group_buttons.check(event)
+
+                if isinstance(object, Window):
+                    if event.button == 5:  # скрол вниз
+                        if object.check_tip(x, y) and object.visibility:
+                            object.pag(object.shift_y - 50)
+                    if event.button == 4:  # скрол вверх
+                        if object.check_tip(x, y) and object.visibility:
+                            object.pag(object.shift_y + 50)
+                    if event.button == 1:  # левое нажатие мыши
+                        if object.check_tip(x, y) and object.visibility:
+                            object.paging = True
+
+
+        if event.type == pygame.MOUSEBUTTONUP:
+            x, y = event.pos
+            for object in self.objects:
+                if isinstance(object, Button):
+                    if object.status and object.check_tip(x, y):
+                        object.click()
+                    object.status = False
+
+                if isinstance(object, Window):
+                    object.paging = False
+
+                if isinstance(object, Function):
+                    object.group_buttons.check(event)
+
+        if event.type == pygame.MOUSEMOTION:
+            x, y = event.pos
+            shift_x = self.last_x - x
+            shift_y = self.last_y - y
+            self.last_x, self.last_y = x, y
+            for object in self.objects:
+                if isinstance(object, Window):
+                    if object.paging:
+                        object.pag(object.shift_y - shift_y)
 
     def pag(self, y):
         self.shift_y = y
@@ -610,6 +690,13 @@ class Group:
     def add_objects(self, *objects):
         for object in objects:
             self.all_objects.append(object)
+
+    def delete(self, *objects):
+        if len(objects) == 0:
+            self.all_objects = []
+        for object in objects:
+            del self.all_objects[self.all_objects.index(object)]
+
 
     def off_all(self):
         for object in self.all_objects:
@@ -889,9 +976,9 @@ class Player:
 
 class Thing(Button):
     def __init__(self, canvas, id, con, count, strength, w=ps_width(8.9),
-                 font=None, inventory=None, location=None, my_inventory=None):
+                 font=None, inventory=None, location=None, my_inventory=None, call=None):
         self.canvas = canvas
-        self.count = count
+        self.count = int(count)
         self.font = font
         self.inventory = inventory
         self.location = location
@@ -900,6 +987,8 @@ class Thing(Button):
         self.y = 0
         self.visibility = True
         self.text_visibility = True
+        self.status = False
+        self.call = call
 
         cur = con.cursor()
         query = f'''SELECT * FROM things
@@ -932,21 +1021,64 @@ class Thing(Button):
         self.width = w
         self.height = h
 
-        self.functions = Window(canvas, None, 0, 0, 300, 500, 1)
+        self.functions = Window(canvas, None, ps_width(51), ps_height(20), ps_width(46), ps_height(40), 1)
         self.functions.visibility = False
-        self.functions.add_object(Function(canvas, 0, 0, 300, 500, self, inventory, location, my_inventory))
+        self.update_function()
 
+    def update_text(self):
+        text = f'{self.name}\nВес: {self.heft * self.count}г.\n...\n...'
+        self.functions.objects[0].text = text
+
+    def update_function(self):
+        self.functions.delete_all_objects()
+
+        text = f'{self.name}\nВес: {self.heft * self.count}г.\n...\n...'
+        font = pygame.font.Font(None, ps_width(1.8))
+        text = Text(self.canvas, 0, 0, text, font)
+        text.color = BLACK
+        self.functions.add_object(text)
+
+
+        function_mod = 1
+        if self.my_inventory == self.inventory:
+            function_mod = 2
+
+        x, y = ps_width(51), ps_height(20)
+        w, h = ps_width(46), ps_height(20)
+        function = Function(self.canvas, x, y, w, h, self, self.inventory, self.location,
+                            self.my_inventory, call=self.call, function_mod=function_mod,
+                            button_size=70)
+        function.set_bg_image()
+        self.functions.add_object(function)
 
     def open_functions(self):
         self.functions.visibility = True
+        self.functions.show_all()
 
-    def get_text_for_saving(self):
-        return f'{self.id};{self.count};{self.strength}'
+    def close_functions(self):
+        self.functions.visibility = False
+        self.functions.hide_all()
+
+    def change_call(self, call):
+        self.call = call
+        for fun in self.functions.objects:
+            fun.call = call
+
+    def get_text_for_saving(self, sep=';'):
+        return f'{self.id}{sep}{self.count}{sep}{self.strength}'
+
+    def click(self, *args):
+            try:
+                self.my_inventory.hide_all_function()
+                self.open_functions()
+            except:
+                print('не удалось запустить функцию')
+                return False
 
 
 
     def show(self):
-        self.functions.show()
+        self.functions.render()
         pygame.draw.rect(self.canvas, BROWN, (self.x, self.y, self.width, self.height), ps_height(0.6))
 
         self.canvas.blit(self.image, (self.x, self.y))
@@ -958,45 +1090,24 @@ class Thing(Button):
 
 
 class Inventory:
-    def __init__(self, canvas, bg_image, player, parametrs=None, mod=1):
+    def __init__(self, canvas, bg_image, player, mod=1):
         self.canvas = canvas
         self.bg_image = bg_image
+        self.bg_for_thinks = get_bg_for_thinks_in_inventory((width, ps_height(83.2)))
         self.con = sqlite3.connect("item_base.db")
         self.heft = 0
         self.player = player
+        self.mod = mod
         if mod == 1:
             player.set_inventory(self)
 
         self.visibility = False
-        separator = ';'
-        if parametrs is None:
-            all_thinks = []
-        elif mod == 1:
-            all_thinks = parametrs.split('</>')[1].split(', ')
-            if all_thinks == ['\n']:
-                all_thinks = []
-        else:
-            if 'NONE' in parametrs.split('\n')[3]:
-                all_thinks = []
-            else:
-                all_thinks = parametrs.split('\n')[3].split(';')
-                separator = ':'
+        self.all_thinks = None
+        self.showing_thinks = None
+        self.last_call = None
+        self.BOARD_MAP = None
 
-
-        self.all_thinks = self.convert_thinks_to_object(all_thinks, separator, w=ps_width(8.9))
-        self.showing_thinks = self.all_thinks
-
-        x = ps_width(2) + 2
-        y = ps_height(28.51)
-        w = ps_width(44.1)
-        h = ps_height(56.8)
-
-        image = get_bg_for_thinks_in_inventory((w, h))
-        self.window = Window(canvas, image, x, y, w, h, 5)
-        self.window.visibility = True
-        self.window.width_object = ps_width(8.9)
-        for think in self.showing_thinks:
-            self.window.add_object(think)
+        self.window = None
 
         x = ps_width(50.5)
         y = ps_height(10)
@@ -1005,11 +1116,49 @@ class Inventory:
         self.cane_find_window = Window(canvas, None, x, y, w, h, 6)
         self.cane_find_window.width_object = ps_width(5)
 
+    def initialization(self, parameters, inventory, location, call=None, BOARD_MAP=None):
+        self.last_call = call
+        self.inventory = inventory
+        self.location = location
+        self.BOARD_MAP = BOARD_MAP
+        separator = ';'
+        if parameters is None:
+            all_thinks = []
+        elif self.mod == 1:
+            all_thinks = parameters.split('</>')[1].split(', ')
+            if all_thinks == ['\n']:
+                all_thinks = []
+        else:
+            if 'NONE' in parameters.split('\n')[3]:
+                all_thinks = []
+            else:
+                all_thinks = parameters.split('\n')[3].split(';')
+                separator = ':'
+
+        self.all_thinks = self.convert_thinks_to_object(all_thinks, separator,
+                                ps_width(8.9), inventory, location, call=call)
+        self.showing_thinks = self.all_thinks
+
+
+        x = ps_width(2) + 2
+        y = ps_height(28.51)
+        w = ps_width(44.1)
+        h = ps_height(56.8)
+
+        #image = get_bg_for_thinks_in_inventory((w, h))
+        self.window = Window(self.canvas, None, x, y, w, h, 5)
+        self.window.visibility = True
+        self.window.width_object = ps_width(8.9)
+        for think in self.showing_thinks:
+            self.window.add_object(think)
 
     def convert_thinks_to_object(self, all_thinks, sep=';', w=50, inventory=None,
-                                 location=None):
+                                 location=None, call=None):
         if any(map(lambda x: x is None, (inventory, location))):
-            return   # если хотя бы один равен None
+            inventory = self.inventory   # если хотя бы один равен None
+            location = self.location
+            if any(map(lambda x: x is None, (inventory, location))):
+                return   # если хотя бы один равен None
         ready_thinks = []
         font = pygame.font.Font(None, int(w // 2.7))
         self.heft = 0
@@ -1019,18 +1168,24 @@ class Inventory:
                 if sep == ':':
                     strength = strength.split('</>')[0]
                 think = Thing(self.canvas, id, self.con, count, strength, w, font,
-                              inventory, location, self)
+                              inventory, location, self, call=call)
                 self.heft += think.heft * int(count)
 
                 ready_thinks.append(think)
         return ready_thinks
+
+    def update_call(self, call):
+        self.last_call = call
+        for i in range(len(self.window.objects)):
+            self.window.objects[i].change_call(call)
+        self.showing_thinks = self.all_thinks
 
     def update_cane_find(self, call):
         self.cane_find_window.objects = []
         can_find = call.can_find
         if 'NONE' in can_find:
             return
-        for think in self.convert_thinks_to_object(call.can_find.split(';'), ':', ps_width(5)):
+        for think in self.convert_thinks_to_object(call.can_find.split(';'), ':', ps_width(5), call=call):
             think.text_visibility = False
             self.cane_find_window.add_object(think)
 
@@ -1041,18 +1196,75 @@ class Inventory:
         for think in self.showing_thinks:
             self.window.add_object(think)
 
-    def append_think(self, think):
-        self.heft += think.heft * int(think.count)
-        self.all_thinks.append(think)
+    def find_think(self, think):
+        for my_think in self.all_thinks:
+            if think.id == my_think.id and think.strength == my_think.strength:
+                return my_think
+        return False
 
-    def delete_think(self, think):
-        self.heft -= think.heft * int(think.count)
-        del self.all_thinks[self.all_thinks.index(think)]
+    def append_think(self, think, my_think, count):
+        if my_think not in self.all_thinks:
+            w = ps_width(8.9)
+            font = pygame.font.Font(None, int(w // 2.7))
+            my_think = Thing(self.canvas, think.id, self.con, count, think.strength, w,
+                             font, self.inventory, self.location, self, call=self.last_call)
 
-    def get_text_for_saving(self):
-        all_thinks = list(map(lambda x: x.get_text_for_saving(), self.all_thinks))
-        all_thinks = ', '.join(all_thinks)
-        text = all_thinks + '</>'
+            self.all_thinks.append(my_think)
+            self.showing_thinks = self.all_thinks
+            self.window.add_object(my_think)
+        else:
+            my_think.count += count
+            self.showing_thinks = self.all_thinks
+        self.heft += think.heft * count
+        for think in self.all_thinks:
+            think.update_text()
+
+    def delete_think(self, think, my_think, count):
+        if count == int(my_think.count):
+            self.heft -= my_think.heft * count
+            del self.all_thinks[self.all_thinks.index(my_think)]
+            self.showing_thinks = self.all_thinks
+            self.window.delete_all_objects()
+            for think in self.showing_thinks:
+                self.window.add_object(think)
+        else:
+            self.heft -= think.heft * count
+            my_think.count -= count
+
+        for think in self.all_thinks:
+            think.update_text()
+
+
+    def change_thinks(self, think, count, call):
+        my_think = self.find_think(think)
+        think = copy.copy(think)
+
+        if count > 0:
+            self.append_think(think, my_think, count)
+        elif count < 0:
+            self.delete_think(think, my_think, -count)
+        if self.mod != 1:
+            was = call.lies
+            call.lies = self.get_text_for_saving(';')
+            if call.lies != 'NONE' and was == 'NONE':
+                self.BOARD_MAP.board_with_marks.append(call)
+            elif was != 'NONE' and call.lies == 'NONE':
+                del self.BOARD_MAP.board_with_marks[self.BOARD_MAP.board_with_marks.index(call)]
+
+
+
+    def get_text_for_saving(self, sep=', '):
+        if sep == ';':
+            all_thinks = list(map(lambda x: x.get_text_for_saving(':'), self.all_thinks))
+        else:
+            all_thinks = list(map(lambda x: x.get_text_for_saving(), self.all_thinks))
+        all_thinks = sep.join(all_thinks)
+        if sep == ', ':
+            text = all_thinks + '</>'
+        else:
+            text = all_thinks
+            if text == '':
+                text = 'NONE'
         return text
 
     def get_ps_of_load(self):
@@ -1061,16 +1273,30 @@ class Inventory:
             ps = 999
         return ps
 
+    def check(self, event):
+        if self.visibility:
+            self.window.check(event)
+            self.check_all_buttons_of_function(event)
+
+    def check_all_buttons_of_function(self, event):
+        for think in self.window.objects:
+            think.functions.check(event)
+
+    def hide_all_function(self):
+        for think in self.window.objects:
+            think.close_functions()
+
     def show(self):
         if self.visibility:
-            self.window.render()
             self.canvas.blit(self.bg_image, (0, ps_height(5.6)))
+            self.window.render()
+            self.canvas.blit(self.bg_for_thinks, (0, ps_height(5.6)))
             self.cane_find_window.render()
 
 
 class Function:
     def __init__(self, canvas, x, y, w, h, thing, inventory, location,
-                 my_inventory, function_mod=1, button_size=50):
+                 my_inventory, function_mod=1, button_size=50, call=None):
         self.canvas = canvas
         self.x = x
         self.y = y
@@ -1078,20 +1304,30 @@ class Function:
         self.h = h
         self.visibility = True
         self.thing = thing
-        self.bg_image = get_image_bg_for_function((self.w, self.h))
+        self.bg_image = None
         self.inventory = inventory
         self.location = location
         self.my_inventory = my_inventory
         self.button_size = button_size
+        self.call = call
 
         self.group_buttons = Group()
 
-        font = pygame.font.Font(None, ps_width(2))
-        self.title_text = Text(self.canvas, self.x + 5, self.y + 5, '', font)
-        font = pygame.font.Font(None, ps_width(2))
-        self.description_text = Text(self.canvas, self.x + 30, self.y + 5, '', font)
+        font = pygame.font.Font(None, ps_width(2.3))
+        self.title_text = Text(self.canvas, self.x + ps_height(0.5),
+                               self.y + ps_height(0.5), '', font)
+
+        font = pygame.font.Font(None, ps_width(1.8))
+        self.description_text = Text(self.canvas, self.x + ps_width(0.5),
+                                     self.y + ps_height(5.5), '', font)
 
         self.change_function(function_mod)
+
+    def set_bg_image(self, name=None):
+        if name is None:
+            self.bg_image = get_image_bg_for_function((self.w, self.h))
+        else:
+            self.bg_image = get_free_image(name, (self.w, self.h))
 
     def change_function(self, function_mod):
         # 1 - подобрать предмет
@@ -1101,17 +1337,17 @@ class Function:
         # 5 - применить
 
         name_buttons = []
-        name = 'images/'
+        name = 'images/action_button_'
         if function_mod == 1:
-            self.title_text.text = 'Поднять предмет'
+            self.title_text.text = f'Поднять предмет'
             self.description_text.text = 'поднять 1/10/100/все'
 
             name_buttons = ('1', '10', '100', 'all')
             for i in range(len(name_buttons)):
-                x = self.w // len(name_buttons) * i
+                x = self.x + self.w // len(name_buttons) * i
                 y = self.y + self.h - self.button_size
-                image = get_free_image(name + name_buttons[i] + '.png', (50, 50))
-                button = Button(self.canvas, image, x, y, 50, 50)
+                image = get_free_image(name + name_buttons[i] + '.png', (self.button_size, self.button_size))
+                button = Button(self.canvas, image, x, y, self.button_size, self.button_size)
                 if i == 0:
                     button.add_function(self.pick_up_an_item_1)
                 elif i == 1:
@@ -1123,34 +1359,78 @@ class Function:
                 self.group_buttons.add_objects(button)
 
         if function_mod == 2:
-            name_buttons.extend(('1', '10', '100', 'все'))
+            self.title_text.text = f'Сбросить предмет'
+            self.description_text.text = 'сбросить 1/10/100/все'
 
-    def pick_up_an_item_1(self):
-        self.location.delete_think(self.thing)
-        self.inventory.append_think(self.thing)
+            name_buttons = ('1', '10', '100', 'all')
+            for i in range(len(name_buttons)):
+                x = self.x + self.w // len(name_buttons) * i
+                y = self.y + self.h - self.button_size
+                image = get_free_image(name + name_buttons[i] + '.png', (self.button_size, self.button_size))
+                button = Button(self.canvas, image, x, y, self.button_size, self.button_size)
+                if i == 0:
+                    button.add_function(self.drop_item_1)
+                elif i == 1:
+                    button.add_function(self.drop_item_10)
+                elif i == 2:
+                    button.add_function(self.drop_item_100)
+                else:
+                    button.add_function(self.drop_item_all)
+                self.group_buttons.add_objects(button)
 
-    def pick_up_an_item_10(self):
-        self.location.delete_think(self.thing)
-        self.inventory.append_think(self.thing)
 
-    def pick_up_an_item_100(self):
-        self.location.delete_think(self.thing)
-        self.inventory.append_think(self.thing)
+    def pick_up_an_item_1(self, *args):
+        self.location.change_thinks(self.thing, -1, self.call)
+        self.inventory.change_thinks(self.thing, 1, self.call)
 
-    def pick_up_an_item_all(self):
-        self.location.delete_think(self.thing)
-        self.inventory.append_think(self.thing)
+    def pick_up_an_item_10(self, *args):
+        if 10 > self.thing.count:
+            return
+        self.location.change_thinks(self.thing, -10, self.call)
+        self.inventory.change_thinks(self.thing, 10, self.call)
 
-    def drop_item_all(self):
-        self.inventory.delete_think(self.thing)
-        self.location.append_think(self.thing)
+    def pick_up_an_item_100(self, *args):
+        if 100 > self.thing.count:
+            return
+        self.location.change_thinks(self.thing, -100, self.call)
+        self.inventory.change_thinks(self.thing, 100, self.call)
+
+    def pick_up_an_item_all(self, *args):
+        self.location.change_thinks(self.thing, -self.thing.count, self.call)
+        self.inventory.change_thinks(self.thing, self.thing.count, self.call)
+
+    def drop_item_1(self, *args):
+        self.location.change_thinks(self.thing, 1, self.call)
+        self.inventory.change_thinks(self.thing, -1, self.call)
+
+    def drop_item_10(self, *args):
+        if 10 > self.thing.count:
+            return
+        self.location.change_thinks(self.thing, 10, self.call)
+        self.inventory.change_thinks(self.thing, -10, self.call)
+
+    def drop_item_100(self, *args):
+        if 100 > self.thing.count:
+            return
+        self.location.change_thinks(self.thing, 100, self.call)
+        self.inventory.change_thinks(self.thing, -100, self.call)
+
+    def drop_item_all(self, *args):
+        self.location.change_thinks(self.thing, self.thing.count, self.call)
+        self.inventory.change_thinks(self.thing, -self.thing.count, self.call)
 
     def move_to(self, x, y):
         self.x, self.y = x, y
-        self.title_text.x = x + 5
-        self.title_text.y = y + 5
-        self.description_text.x = x + 30
-        self.description_text.y = y + 30
+        self.title_text.x = x + ps_height(0.5)
+        self.title_text.y = y + ps_height(1.5)
+        self.description_text.x = x + ps_width(0.5)
+        self.description_text.y = y + ps_height(6)
+
+        for i in range(len(self.group_buttons.all_objects)):
+            button = self.group_buttons.all_objects[i]
+            x = self.x + self.w // len(self.group_buttons.all_objects) * i
+            y = self.y + self.h - self.button_size
+            button.move_to(x, y)
 
     def show(self):
         if not self.visibility:
