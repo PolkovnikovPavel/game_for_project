@@ -570,6 +570,7 @@ while running:
 
     if type_window == 'tasks':
         tasks.show()
+        tasks.show_all_tasks()
 
     if type_window != 'main_window':
         objects_map.show()

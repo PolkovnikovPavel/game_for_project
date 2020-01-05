@@ -9,6 +9,7 @@ RED = (255, 0, 0)
 GREEN = (0, 0, 255)
 LIGHT_GREEN = (27, 65, 16)
 BROWN = (74, 47, 4)
+GRAY = (128, 128, 128)
 width, height = 0, 0
 
 
@@ -1065,3 +1066,84 @@ class Tasks:
     def show(self):
         if self.visibility:
             self.canvas.blit(self.bg_image, (0, ps_height(5.6)))
+
+    def show_all_tasks(self):
+        self.x = 28
+        self.y = 74
+        self.width = 302
+        self.height = 45
+        self.story_task_font = pygame.font.SysFont('arial', 36)
+        self.side_task_font = pygame.font.SysFont('arial', 30)
+        self.con = sqlite3.connect("data/tasks_base.db")
+        self.get_actual_story_tasks()
+        self.get_actual_side_tasks()
+        self.get_past_story_tasks()
+        self.get_past_side_tasks()
+
+    def get_actual_story_tasks(self):
+        cur = self.con.cursor()
+        actual_tasks = cur.execute("SELECT * from tasks WHERE progress IN(1) AND type_id IN(1)").fetchall()
+        for elem in actual_tasks:
+            self.id = id
+            self.type_id = elem[1]
+            self.name = elem[2]
+            self.text = elem[3]
+            self.completed = elem[4]
+
+            pygame.draw.rect(self.canvas, BROWN, (self.x, self.y, self.width, self.height), ps_height(0.6))
+
+            text1 = self.story_task_font.render(self.name, 1, BLACK)
+            self.canvas.blit(text1, (self.x + 5, self.y + 1))
+
+            self.y += 45
+
+    def get_past_story_tasks(self):
+        cur = self.con.cursor()
+        past_tasks = cur.execute("SELECT * from tasks WHERE progress IN(2) AND type_id IN(1)").fetchall()
+        for elem in past_tasks:
+            self.id = id
+            self.type_id = elem[1]
+            self.name = elem[2]
+            self.text = elem[3]
+            self.completed = elem[4]
+
+            pygame.draw.rect(self.canvas, BROWN, (self.x, self.y, self.width, self.height), ps_height(0.6))
+
+            text1 = self.story_task_font.render(self.name, 1, GRAY)
+            self.canvas.blit(text1, (self.x + 5, self.y + 1))
+
+            self.y += 45
+
+    def get_actual_side_tasks(self):
+        cur = self.con.cursor()
+        past_tasks = cur.execute("SELECT * from tasks WHERE progress IN(1) AND type_id IN(2)").fetchall()
+        for elem in past_tasks:
+            self.id = id
+            self.type_id = elem[1]
+            self.name = elem[2]
+            self.text = elem[3]
+            self.completed = elem[4]
+
+            pygame.draw.rect(self.canvas, BROWN, (self.x, self.y, self.width, self.height), ps_height(0.6))
+
+            text1 = self.side_task_font.render(self.name, 1, BLACK)
+            self.canvas.blit(text1, (self.x + 5, self.y + 1))
+
+            self.y += 45
+
+    def get_past_side_tasks(self):
+        cur = self.con.cursor()
+        past_tasks = cur.execute("SELECT * from tasks WHERE progress IN(2) AND type_id IN(2)").fetchall()
+        for elem in past_tasks:
+            self.id = id
+            self.type_id = elem[1]
+            self.name = elem[2]
+            self.text = elem[3]
+            self.completed = elem[4]
+
+            pygame.draw.rect(self.canvas, BROWN, (self.x, self.y, self.width, self.height), ps_height(0.6))
+
+            text1 = self.side_task_font.render(self.name, 1, GRAY)
+            self.canvas.blit(text1, (self.x + 5, self.y + 1))
+
+            self.y += 45
