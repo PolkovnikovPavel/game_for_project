@@ -173,7 +173,7 @@ def show_info_from_task(*args):
     actual_tasks = cur.execute("SELECT text from tasks WHERE id IN(?)", (num,)).fetchone()
     print(actual_tasks[0])
     text_font = pygame.font.SysFont('arial', 16)
-    text1 = Text(screen, 350, 160, actual_tasks[0], text_font)
+    text1 = Text(screen, 350, 160, actual_tasks[0], text_font, color=BLACK)
     text1.show()
 
 
@@ -337,10 +337,18 @@ def create_all_objects():
     btn.add_function(opening_tasks)
     objects_map.add_objects(btn)
 
-    image = get_tasks_image((302, 45))
-    btn = Button(screen, image, ps_width(2.5), ps_height(11), 302, 45)
-    btn.add_function(show_info_from_task)
-    objects_tasks.add_objects(btn)
+    cur = sqlite3.connect("data/tasks_base.db").cursor()
+    n = cur.execute("SELECT COUNT(id) FROM tasks").fetchone()
+    btn_tasks_x = 28
+    btn_tasks_y = 74
+    btn_tasks_width = 302
+    btn_tasks_height = 45
+    for i in range(1, n[0] + 1):
+        image = get_tasks_image((btn_tasks_width, btn_tasks_height))
+        btn = Button(screen, image, btn_tasks_x, btn_tasks_y, btn_tasks_width, btn_tasks_height)
+        btn.add_function(show_info_from_task)
+        objects_tasks.add_objects(btn)
+        btn_tasks_y += 45
 
     file = open('map/description_map.txt', 'r')
     font = pygame.font.Font(None, zoom * 10)

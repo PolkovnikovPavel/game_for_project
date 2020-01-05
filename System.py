@@ -1113,15 +1113,3 @@ class Tasks:
             self.canvas.blit(text1, (self.x + 5, self.y + 1))
 
             self.y += 45
-
-    #def show_first_task(self):
-    #    cur = self.con.cursor()
-    #    actual_tasks = cur.execute("SELECT text from tasks WHERE progress IN(1)").fetchone()
-    #    text1 = Text(self.canvas, 350, 160, actual_tasks[0], self.text_font, color=BLACK)
-    #    text1.show()
-#
-    #def show_second_task(self):
-    #    pass
-
-
-
