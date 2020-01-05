@@ -11,6 +11,7 @@ def get_bg_main_window(size):
     bg_main_window = pygame.image.fromstring(data, size, mode)
     return bg_main_window
 
+
 def get_bg_tool_bar_map(size):
     bg_tool_bar_map = Image.open('images/bg_tool_bar_map.png')
     bg_tool_bar_map = bg_tool_bar_map.resize(size, Image.ANTIALIAS)
@@ -80,6 +81,7 @@ def get_btn_save_map_click(size):
     btn = pygame.image.fromstring(data, size, mode)
     return btn
 
+
 def get_image_player_on_mao(size):
     image = Image.open('images/player_on_map.png')
     image = image.resize(size, Image.ANTIALIAS)
@@ -122,6 +124,16 @@ def get_bg_for_inventory(size):
 
 def get_bg_for_thinks_in_inventory(size):
     image = Image.open('images/bg_for_thinks_in_inventory.png')
+    image = image.resize(size, Image.ANTIALIAS)
+
+    mode = image.mode
+    data = image.tobytes()
+    image = pygame.image.fromstring(data, size, mode)
+    return image
+
+
+def get_bg_for_tasks(size):
+    image = Image.open('images/bg_for_tasks.png')
     image = image.resize(size, Image.ANTIALIAS)
 
     mode = image.mode
@@ -180,7 +192,6 @@ def get_image_btn_search(size):
     return image
 
 
-
 def get_map(size, mod=0):
     map = Image.open('images/map.png')
     map = map.resize(size, Image.ANTIALIAS)
@@ -190,7 +201,6 @@ def get_map(size, mod=0):
     data = map.tobytes()
     map = pygame.image.fromstring(data, size, mode)
     return map
-
 
 
 def cat_image(img, border):

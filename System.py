@@ -3,7 +3,6 @@ import time
 import sqlite3
 from images.images import *
 
-
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
@@ -150,7 +149,7 @@ def change_parametrs(id):
             NONE
             NONE
             NONE'''
-    elif id[0] ==25:
+    elif id[0] == 25:
         parametrs = '''25;(x,y);0;0;1
             NONE
             NONE
@@ -402,7 +401,7 @@ class Call:
         lies = []
         all_things_ling = {}
         all_things_can_find = {}
-        #new_things = {}
+        # new_things = {}
         if 'NONE' in self.lies:
             all_things_ling = {}
         else:
@@ -421,7 +420,6 @@ class Call:
                 strength = int(strength)
                 all_things_can_find[id] = [count, strength]
 
-
         for i in all_things_can_find.keys():
             id, count, strength = i, *all_things_can_find[i]
             if id in all_things_ling:
@@ -439,9 +437,6 @@ class Call:
         self.count -= 1
         self.lies = ';'.join(lies)
         self.can_find = ';'.join(can_find)
-
-
-
 
     def change_parametrs(self, parametrs):
         parametrs = parametrs.split()
@@ -563,14 +558,15 @@ class Window(Object):
             x = self.x + 5
         else:
             x = self.x + 5 + self.width // self.column_count
-        x = (len(self.objects) - ((len(self.objects) // self.column_count) * self.column_count)) * (self.width // self.column_count) + self.x
+        x = (len(self.objects) - ((len(self.objects) // self.column_count) * self.column_count)) * (
+                self.width // self.column_count) + self.x
         y = (len(self.objects) // self.column_count) * self.width_object + self.shift_y
         object.move_to(x, y)
         self.objects.append(object)
 
     def pag(self, y):
         self.shift_y = y
-        if self.mod:   # следующие действия делают так,
+        if self.mod:  # следующие действия делают так,
             # чтоб объекты не выходили за границы экрана
             if self.shift_y > self.y:
                 self.shift_y = self.y
@@ -579,7 +575,6 @@ class Window(Object):
 
                 if self.shift_y < -((((len(self.objects) // self.column_count)) - (
                         self.height // self.width_object))) * self.width_object:
-
                     self.shift_y = -((((len(self.objects) // self.column_count)) - (
                             self.height // self.width_object))) * self.width_object
             else:
@@ -638,7 +633,6 @@ class Group:
                         if object.check_tip(x, y) and object.visibility:
                             object.paging = True
 
-
         if event.type == pygame.MOUSEBUTTONUP:
             x, y = event.pos
             for object in self.all_objects:
@@ -666,7 +660,7 @@ class Group:
 
 
 class Player:
-    def __init__(self, canvas,  x, y, game_time):
+    def __init__(self, canvas, x, y, game_time):
         self.canvas = canvas
         self.width = 50
         self.height = 50
@@ -719,7 +713,6 @@ class Player:
     def set_inventory(self, inventory):
         self.inventory = inventory
 
-
     def set_parametrs(self, parametrs):
         parametrs = parametrs.split('</>')[0].split(';')
 
@@ -753,7 +746,6 @@ class Player:
         self.game_time.num_time = int(parametrs[24])
         self.game_time.update_time()
 
-
     def set_cor(self, x, y):
         self.x = x
         self.y = y
@@ -770,7 +762,7 @@ class Player:
             self.change_exhaustion += 0.8
 
         if self.energy < 0:
-            self.energy = 100   # сделать так чтоб игрок сразу ложился спать
+            self.energy = 100  # сделать так чтоб игрок сразу ложился спать
 
         if self.poison > 70:
             self.change_exhaustion += 1.5
@@ -820,7 +812,6 @@ class Player:
         if self.exhaustion > 40:
             self.change_exhaustion -= 0.3
 
-
     def change_all_parametrs(self, delte_t):
         self.hunger -= self.change_hunger * delte_t
         self.water -= self.change_water * delte_t
@@ -830,7 +821,6 @@ class Player:
         self.radiation += self.change_radiation * delte_t
         self.temperature -= self.change_temperature * delte_t
         self.bleeding += self.change_bleeding * delte_t
-
 
     def move_to(self, x, y):
         if self.inventory.heft > self.max_heft:
@@ -929,8 +919,6 @@ class Thing(Button):
     def get_text_for_saving(self):
         return f'{self.id};{self.count};{self.strength}'
 
-
-
     def show(self):
         pygame.draw.rect(self.canvas, BROWN, (self.x, self.y, self.width, self.height), ps_height(0.6))
 
@@ -966,7 +954,6 @@ class Inventory:
             else:
                 all_thinks = parametrs.split('\n')[3].split(';')
                 separator = ':'
-
 
         self.all_thinks = self.convert_thinks_to_object(all_thinks, separator)
         self.showing_thinks = self.all_thinks
@@ -1015,7 +1002,7 @@ class Inventory:
         return text
 
     def get_ps_of_load(self):
-        ps =  int(100 * self.heft / self.player.max_heft)
+        ps = int(100 * self.heft / self.player.max_heft)
         if ps > 999:
             ps = 999
         return ps
@@ -1068,3 +1055,16 @@ class GameTime:
         self.canvas.blit(text, (ps_width(44), ps_height(91)))
 
 
+class Tasks:
+    def __init__(self, canvas, bg_image, visibility):
+        self.canvas = canvas
+        self.bg_image = bg_image
+        self.visibility = visibility
+
+    def open_tasks(self):
+        pass
+
+    def show(self):
+        if self.visibility:
+            self.window.render()
+            self.canvas.blit(self.bg_image, (0, ps_height(5.6)))

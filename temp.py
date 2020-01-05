@@ -26,11 +26,11 @@ def start_new_game(*args):
 21;30;0, 33;5;720, 26;2;0, 25;1;0, 28;1;19000, 4;40;0</>'''
     description_player.write(text)
     description_player.close()
-    show_starting_slides(3)
+    show_starting_slides(3, "bmp")
     start()
 
 
-def show_starting_slides(number):
+def show_starting_slides(number, format):
     count = 2
     image = get_free_image("images\start_slides\start_slide_1.bmp", (width, height))
     start_slide = Object(screen, image, 0, 0, width, height)
@@ -40,7 +40,7 @@ def show_starting_slides(number):
         for event in pygame.event.get():
             if 1 in pygame.key.get_pressed() or event.type == pygame.MOUSEBUTTONDOWN:
                 if count <= number:
-                    slide_name = "images\start_slides\start_slide_" + str(count) + ".bmp"
+                    slide_name = "images\start_slides\start_slide_" + str(count) + "." + format
                     image = get_free_image(slide_name, (width, height))
                     start_slide = Object(screen, image, 0, 0, width, height)
                     start_slide.show()
@@ -475,6 +475,9 @@ while running:
                 if event.button == 1:
                     if location.window.check_tip(x, y) and location.visibility:
                         location.window.paging = True
+
+            if type_window == 'tasks':
+                pass
 
         if event.type == pygame.MOUSEBUTTONUP:
             x, y = event.pos
