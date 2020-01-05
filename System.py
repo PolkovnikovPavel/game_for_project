@@ -1056,15 +1056,12 @@ class GameTime:
 
 
 class Tasks:
-    def __init__(self, canvas, bg_image, visibility):
+    def __init__(self, canvas, bg_image):
         self.canvas = canvas
         self.bg_image = bg_image
-        self.visibility = visibility
-
-    def open_tasks(self):
-        pass
+        self.con = sqlite3.connect("data/tasks_base.db")
+        self.visibility = False
 
     def show(self):
         if self.visibility:
-            self.window.render()
             self.canvas.blit(self.bg_image, (0, ps_height(5.6)))

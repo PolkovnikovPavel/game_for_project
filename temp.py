@@ -109,7 +109,7 @@ def save():
 
 
 def start(*args):
-    global type_window, inventory, location, BOARD_MAP
+    global type_window, inventory, location, BOARD_MAP, tasks
 
     objects_main.off_all()
     main_map.visibility = True
@@ -117,6 +117,9 @@ def start(*args):
 
     inventory = Inventory(screen, None, player, parametrs=open_file())
     inventory.bg_image = get_bg_for_inventory((width, ps_height(83.2)))
+
+    tasks = Tasks(screen, None)
+    tasks.bg_image = get_bg_for_tasks((width, ps_height(83.2)))
 
     file = open('map/description_map.txt', 'r')
     font = pygame.font.Font(None, zoom * 10)
@@ -151,6 +154,14 @@ def opening_inventory(*args):
     location.visibility = False
     player.stop()
     type_window = 'inventory'
+
+
+def opening_tasks(*args):
+    global type_window
+    tasks.visibility = True
+    location.visibility = False
+    player.stop()
+    type_window = 'tasks'
 
 
 def change_inventory_type_to_location(*args):
@@ -191,6 +202,7 @@ def opening_main_window(*args):
 def open_map(*args):
     global type_window
     inventory.visibility = False
+    tasks.visibility = False
     type_window = 'main'
 
 
@@ -305,6 +317,11 @@ def create_all_objects():
     image = get_image_btn_for_main_map_window((ps_width(14.2), ps_height(9.9)))
     btn = Button(screen, image, ps_width(57.4), ps_height(89.6), ps_width(14.2), ps_height(9.9))
     btn.add_function(opening_inventory)
+    objects_map.add_objects(btn)
+
+    image = get_image_btn_for_main_map_window((ps_width(14.2), ps_height(9.9)))
+    btn = Button(screen, image, ps_width(29), ps_height(89.6), ps_width(14.2), ps_height(9.9))
+    btn.add_function(opening_tasks)
     objects_map.add_objects(btn)
 
     file = open('map/description_map.txt', 'r')
@@ -550,6 +567,9 @@ while running:
         objects_inventory.show()
         if location.visibility:
             btn_searching.show()
+
+    if type_window == 'tasks':
+        tasks.show()
 
     if type_window != 'main_window':
         objects_map.show()
