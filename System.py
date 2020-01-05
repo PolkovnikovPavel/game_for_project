@@ -301,16 +301,17 @@ class Object:
 
 
 class Text(Object):
-    def __init__(self, canvas, x, y, text, font):
+    def __init__(self, canvas, x, y, text, font, color=WHITE):
         self.canvas = canvas
         self.x = x
         self.y = y
         self.text = text
         self.font = font
         self.visibility = True
+        self.color = color
 
     def show(self):
-        text = self.font.render(str(self.text), 1, WHITE)
+        text = self.font.render(str(self.text), 1, self.color)
         self.canvas.blit(text, (self.x, self.y))
 
 
@@ -1062,6 +1063,7 @@ class Tasks:
         self.bg_image = bg_image
         self.con = sqlite3.connect("data/tasks_base.db")
         self.visibility = False
+        self.text_font = pygame.font.SysFont('arial', 24)
 
     def show(self):
         if self.visibility:
@@ -1077,8 +1079,6 @@ class Tasks:
         self.con = sqlite3.connect("data/tasks_base.db")
         self.get_actual_story_tasks()
         self.get_actual_side_tasks()
-        self.get_past_story_tasks()
-        self.get_past_side_tasks()
 
     def get_actual_story_tasks(self):
         cur = self.con.cursor()
@@ -1093,23 +1093,6 @@ class Tasks:
             pygame.draw.rect(self.canvas, BROWN, (self.x, self.y, self.width, self.height), ps_height(0.6))
 
             text1 = self.story_task_font.render(self.name, 1, BLACK)
-            self.canvas.blit(text1, (self.x + 5, self.y + 1))
-
-            self.y += 45
-
-    def get_past_story_tasks(self):
-        cur = self.con.cursor()
-        past_tasks = cur.execute("SELECT * from tasks WHERE progress IN(2) AND type_id IN(1)").fetchall()
-        for elem in past_tasks:
-            self.id = id
-            self.type_id = elem[1]
-            self.name = elem[2]
-            self.text = elem[3]
-            self.completed = elem[4]
-
-            pygame.draw.rect(self.canvas, BROWN, (self.x, self.y, self.width, self.height), ps_height(0.6))
-
-            text1 = self.story_task_font.render(self.name, 1, GRAY)
             self.canvas.blit(text1, (self.x + 5, self.y + 1))
 
             self.y += 45
@@ -1131,19 +1114,14 @@ class Tasks:
 
             self.y += 45
 
-    def get_past_side_tasks(self):
-        cur = self.con.cursor()
-        past_tasks = cur.execute("SELECT * from tasks WHERE progress IN(2) AND type_id IN(2)").fetchall()
-        for elem in past_tasks:
-            self.id = id
-            self.type_id = elem[1]
-            self.name = elem[2]
-            self.text = elem[3]
-            self.completed = elem[4]
+    #def show_first_task(self):
+    #    cur = self.con.cursor()
+    #    actual_tasks = cur.execute("SELECT text from tasks WHERE progress IN(1)").fetchone()
+    #    text1 = Text(self.canvas, 350, 160, actual_tasks[0], self.text_font, color=BLACK)
+    #    text1.show()
+#
+    #def show_second_task(self):
+    #    pass
 
-            pygame.draw.rect(self.canvas, BROWN, (self.x, self.y, self.width, self.height), ps_height(0.6))
 
-            text1 = self.side_task_font.render(self.name, 1, GRAY)
-            self.canvas.blit(text1, (self.x + 5, self.y + 1))
 
-            self.y += 45

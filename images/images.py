@@ -208,6 +208,16 @@ def cat_image(img, border):
     return img
 
 
+def get_tasks_image(size):
+    image = Image.open('images/bg_for_task.png')
+    image = image.resize(size, Image.ANTIALIAS)
+
+    mode = image.mode
+    data = image.tobytes()
+    image = pygame.image.fromstring(data, size, mode)
+    return image
+
+
 def get_pygame_image(image):
     mode = image.mode
     size = image.size

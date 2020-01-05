@@ -164,6 +164,19 @@ def opening_tasks(*args):
     type_window = 'tasks'
 
 
+def show_info_from_task(*args):
+    x, y = pygame.mouse.get_pos()
+    num = ((y - 75) // 45) + 1
+    print(num)
+    con = sqlite3.connect("data/tasks_base.db")
+    cur = con.cursor()
+    actual_tasks = cur.execute("SELECT text from tasks WHERE id IN(?)", (num,)).fetchone()
+    print(actual_tasks[0])
+    text_font = pygame.font.SysFont('arial', 16)
+    text1 = Text(screen, 350, 160, actual_tasks[0], text_font)
+    text1.show()
+
+
 def change_inventory_type_to_location(*args):
     global location, type_window
     type_window = 'inventory'
@@ -324,6 +337,11 @@ def create_all_objects():
     btn.add_function(opening_tasks)
     objects_map.add_objects(btn)
 
+    image = get_tasks_image((302, 45))
+    btn = Button(screen, image, ps_width(2.5), ps_height(11), 302, 45)
+    btn.add_function(show_info_from_task)
+    objects_tasks.add_objects(btn)
+
     file = open('map/description_map.txt', 'r')
     font = pygame.font.Font(None, zoom * 10)
     BOARD_MAP = Board(screen, 3906 // size_cell, 2047 // size_cell, font,
@@ -394,6 +412,7 @@ image_map = cat_image(main_image_map, (map_x_on_main_map, map_y_on_main_map,
 objects_main = Group()
 objects_map = Group()
 objects_inventory = Group()
+objects_tasks = Group()
 
 type_window = 'main_window'
 
@@ -430,6 +449,7 @@ while running:
     screen.fill(BLACK)
 
     for event in pygame.event.get():
+        # print(pygame.mouse.get_pos())
         if event.type == pygame.QUIT:
             running = False
             save()
@@ -444,6 +464,8 @@ while running:
                 objects_inventory.check(event)
                 if location.visibility and btn_searching.check_tip(x, y):
                     btn_searching.status = True
+            if type_window == 'tasks':
+                objects_tasks.check(event)
 
             if type_window == 'main':
                 if event.button == 1:
@@ -507,6 +529,8 @@ while running:
                 if location.visibility and btn_searching.check_tip(x, y):
                     btn_searching.click()
                     btn_searching.status = False
+            if type_window == 'tasks':
+                objects_tasks.check(event)
 
             inventory.window.paging = False
             location.window.paging = False
@@ -571,6 +595,7 @@ while running:
     if type_window == 'tasks':
         tasks.show()
         tasks.show_all_tasks()
+        objects_tasks.show()
 
     if type_window != 'main_window':
         objects_map.show()
