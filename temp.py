@@ -32,7 +32,7 @@ def start_new_game(*args):
 
 def show_starting_slides(number, format):
     count = 2
-    image = get_free_image("images\start_slides\start_slide_1.bmp", (width, height))
+    image = get_free_image("images\start_slides\start_slide_1." + format, (width, height))
     start_slide = Object(screen, image, 0, 0, width, height)
     start_slide.show()
     pygame.display.flip()
@@ -109,7 +109,7 @@ def save():
 
 
 def start(*args):
-    global type_window, inventory, location, BOARD_MAP, tasks
+    global type_window, inventory, location, BOARD_MAP, tasks, selected_task
 
     objects_main.off_all()
     main_map.visibility = True
@@ -120,6 +120,7 @@ def start(*args):
 
     tasks = Tasks(screen, None)
     tasks.bg_image = get_bg_for_tasks((width, ps_height(83.2)))
+    selected_task = 1
 
     file = open('map/description_map.txt', 'r')
     font = pygame.font.Font(None, zoom * 10)
@@ -164,17 +165,22 @@ def opening_tasks(*args):
     type_window = 'tasks'
 
 
-def show_info_from_task(*args):
+def change_num_task(*args):
+    global selected_task
     x, y = pygame.mouse.get_pos()
-    num = ((y - 75) // 45) + 1
-    print(num)
+    selected_task = ((y - 75) // 45) + 1
+
+
+def show_info_from_task(num):
     con = sqlite3.connect("data/tasks_base.db")
     cur = con.cursor()
-    actual_tasks = cur.execute("SELECT text from tasks WHERE id IN(?)", (num,)).fetchone()
-    print(actual_tasks[0])
-    text_font = pygame.font.SysFont('arial', 16)
-    text1 = Text(screen, 350, 160, actual_tasks[0], text_font, color=BLACK)
-    text1.show()
+    actual_tasks = cur.execute("SELECT text, name from tasks WHERE id IN(?)", (num,)).fetchone()
+    name_font = pygame.font.SysFont('arial', 48)
+    text_font = pygame.font.SysFont('arial', 24)
+    name = Text(screen, 350, 80, actual_tasks[1], name_font, color=BLACK)
+    text = Text(screen, 350, 160, actual_tasks[0], text_font, color=BLACK)
+    name.show()
+    text.show()
 
 
 def change_inventory_type_to_location(*args):
@@ -346,7 +352,7 @@ def create_all_objects():
     for i in range(1, n[0] + 1):
         image = get_tasks_image((btn_tasks_width, btn_tasks_height))
         btn = Button(screen, image, btn_tasks_x, btn_tasks_y, btn_tasks_width, btn_tasks_height)
-        btn.add_function(show_info_from_task)
+        btn.add_function(change_num_task)
         objects_tasks.add_objects(btn)
         btn_tasks_y += 45
 
@@ -601,9 +607,11 @@ while running:
             btn_searching.show()
 
     if type_window == 'tasks':
+        global selected_task
         tasks.show()
         tasks.show_all_tasks()
         objects_tasks.show()
+        show_info_from_task(selected_task)
 
     if type_window != 'main_window':
         objects_map.show()
