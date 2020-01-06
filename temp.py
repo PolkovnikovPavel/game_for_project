@@ -38,9 +38,12 @@ def continue_game(*args):
 
 def searching_on_call(*args):
     call = BOARD_MAP.get_call_in_bord((player.x, player.y))
+    was = call.lies
     call.find_things()
     location.update_thinks(location.convert_thinks_to_object(call.lies.split(';'), ':', ps_width(8.9), call=call))
     location.update_cane_find(call)
+    if call.lies != 'NONE' and was == 'NONE':
+        BOARD_MAP.board_with_marks.append(call)
 
 def save():
     description_player = open('data/SaveGame.txt', 'w')
@@ -138,12 +141,19 @@ def opening_inventory(*args):
     inventory.hide_all_function()
     location.hide_all_function()
 
+    call = BOARD_MAP.get_call_in_bord((player.x, player.y))
+    if 'NONE' not in call.lies:
+        location.update_thinks(
+            location.convert_thinks_to_object(call.lies.split(';'), ':', ps_width(8.9), call=call))
+    else:
+        location.update_thinks(location.convert_thinks_to_object([], call=call))
+
     player.stop()
     type_window = 'inventory'
 
 
 def change_inventory_type_to_location(*args):
-    global location, type_window
+    global type_window
     player.stop()
     type_window = 'inventory'
     inventory.visibility = False
@@ -339,7 +349,7 @@ def create_all_objects():
     objects_inventory.add_objects(btn)
 
     image = get_image_btn_search((ps_width(14), ps_height(5)))
-    btn_searching = Button(screen, image, ps_width(60), ps_height(50), ps_width(14), ps_height(5))
+    btn_searching = Button(screen, image, ps_width(68), ps_height(78), ps_width(14), ps_height(5))
     btn_searching.add_function(searching_on_call)
 
 
@@ -517,6 +527,9 @@ while running:
                     map_y = -image_size[1] + height
 
                 main_map.move_to(map_x, map_y)
+            if type_window == 'inventory':
+                inventory.check(event)
+                location.check(event)
 
             if inventory.window.paging:
                 inventory.window.pag(inventory.window.shift_y - shift_y)

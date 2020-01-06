@@ -307,6 +307,7 @@ class Text(Object):
         self.font = font
         self.color = WHITE
         self.visibility = True
+        self.height = len(str(self.text).split('\n')) * ps_height(2)
 
     def change_text(self, new_text):
         self.text = str(new_text)
@@ -591,12 +592,12 @@ class Window(Object):
 
     def add_object(self, object):
         object.visibility = self.visibility
-        #if len(self.objects) % self.column_count == 0:
-        #    x = self.x + 5
-        #else:
-        #    x = self.x + 5 + self.width // self.column_count
+
         x = (len(self.objects) - ((len(self.objects) // self.column_count) * self.column_count)) * (self.width // self.column_count) + self.x
-        y = (len(self.objects) // self.column_count) * self.width_object + self.shift_y
+        if self.column_count != 1:
+            y = (len(self.objects) // self.column_count) * object.height + self.shift_y
+        else:
+            y = sum(map(lambda x: x.height, self.objects)) + self.shift_y + (ps_height(2) * len(self.objects))
         object.move_to(x, y)
         self.objects.append(object)
 
@@ -669,7 +670,10 @@ class Window(Object):
 
         for i in range(len(self.objects)):
             object = self.objects[i]
-            y = (i // self.column_count) * self.width_object + self.shift_y + 5
+            if self.column_count != 1:
+                y = (i // self.column_count) * self.objects[i].height + self.shift_y
+            else:
+                y = sum(map(lambda x: x.height, self.objects[:i])) + self.shift_y + (ps_height(2) * i)
             object.move_to(object.x, y)
 
     def render(self):
@@ -848,19 +852,26 @@ class Player:
         self.x = x
         self.y = y
 
-    def check_condition(self, call):
-        self.change_radiation = float(call.rad)
+    def check_condition(self, call=None):
+        if call is not None:
+            self.change_radiation = float(call.rad)
         self.change_exhaustion = -0.5
         if self.hunger < 0:
             self.hunger = 0
             self.change_exhaustion += 0.6
+        elif self.hunger > 100:
+            self.hunger = 100
 
         if self.water < 0:
             self.water = 0
             self.change_exhaustion += 0.8
+        elif self.water > 100:
+            self.water = 100
 
         if self.energy < 0:
             self.energy = 100   # сделать так чтоб игрок сразу ложился спать
+        elif self.energy > 100:
+            self.energy = 100
 
         if self.poison > 70:
             self.change_exhaustion += 1.5
@@ -1021,7 +1032,8 @@ class Thing(Button):
         self.width = w
         self.height = h
 
-        self.functions = Window(canvas, None, ps_width(51), ps_height(20), ps_width(46), ps_height(40), 1)
+        self.functions = Window(canvas, None, ps_width(51), ps_height(20), ps_width(46), ps_height(60), 1)
+        self.functions.mod = False
         self.functions.visibility = False
         self.update_function()
 
@@ -1032,7 +1044,19 @@ class Thing(Button):
     def update_function(self):
         self.functions.delete_all_objects()
 
-        text = f'{self.name}\nВес: {self.heft * self.count}г.\n...\n...'
+        expiration_text = '...'
+        if self.type == 9 or self.type == 2 or self.type == 3:
+            if self.strength != 0:
+                expiration_text = f'испортится через {self.strength} часов'
+            else:
+                expiration_text = f'никогда не испортится'
+        elif self.type == 4 or self.type == 6 or self.type == 7:
+            if self.strength != 0:
+                expiration_text = f'сломается через {self.strength} применений'
+            else:
+                expiration_text = f'продержется больше чем ваша жизнь!'
+
+        text = f'{self.name}\nВес: {self.heft * self.count}г.\n{expiration_text}\n...'
         font = pygame.font.Font(None, ps_width(1.8))
         text = Text(self.canvas, 0, 0, text, font)
         text.color = BLACK
@@ -1050,6 +1074,30 @@ class Thing(Button):
                             button_size=70)
         function.set_bg_image()
         self.functions.add_object(function)
+
+        if self.type == 9:
+            function_mod = 3
+            x, y = ps_width(51), ps_height(20)
+            w, h = ps_width(46), ps_height(31)
+            function = Function(self.canvas, x, y, w, h, self, self.inventory,
+                                self.location,
+                                self.my_inventory, call=self.call,
+                                function_mod=function_mod,
+                                button_size=70)
+            function.set_bg_image('images/bg_for_function_9.png')
+            self.functions.add_object(function)
+
+        if self.type == 2:
+            function_mod = 4
+            x, y = ps_width(51), ps_height(20)
+            w, h = ps_width(46), ps_height(31)
+            function = Function(self.canvas, x, y, w, h, self, self.inventory,
+                                self.location,
+                                self.my_inventory, call=self.call,
+                                function_mod=function_mod,
+                                button_size=70)
+            function.set_bg_image('images/bg_for_function_9.png')
+            self.functions.add_object(function)
 
     def open_functions(self):
         self.functions.visibility = True
@@ -1103,6 +1151,7 @@ class Inventory:
 
         self.visibility = False
         self.all_thinks = None
+        self.groupe_for_thinks = Group()
         self.showing_thinks = None
         self.last_call = None
         self.BOARD_MAP = None
@@ -1170,6 +1219,7 @@ class Inventory:
                 think = Thing(self.canvas, id, self.con, count, strength, w, font,
                               inventory, location, self, call=call)
                 self.heft += think.heft * int(count)
+                self.groupe_for_thinks.add_objects(think.functions)
 
                 ready_thinks.append(think)
         return ready_thinks
@@ -1208,6 +1258,7 @@ class Inventory:
             font = pygame.font.Font(None, int(w // 2.7))
             my_think = Thing(self.canvas, think.id, self.con, count, think.strength, w,
                              font, self.inventory, self.location, self, call=self.last_call)
+            self.groupe_for_thinks.add_objects(think.functions)
 
             self.all_thinks.append(my_think)
             self.showing_thinks = self.all_thinks
@@ -1276,6 +1327,7 @@ class Inventory:
     def check(self, event):
         if self.visibility:
             self.window.check(event)
+            self.groupe_for_thinks.check(event)
             self.check_all_buttons_of_function(event)
 
     def check_all_buttons_of_function(self, event):
@@ -1290,8 +1342,8 @@ class Inventory:
         if self.visibility:
             self.canvas.blit(self.bg_image, (0, ps_height(5.6)))
             self.window.render()
-            self.canvas.blit(self.bg_for_thinks, (0, ps_height(5.6)))
             self.cane_find_window.render()
+            self.canvas.blit(self.bg_for_thinks, (0, ps_height(5.6)))
 
 
 class Function:
@@ -1302,6 +1354,7 @@ class Function:
         self.y = y
         self.w = w
         self.h = h
+        self.height = h
         self.visibility = True
         self.thing = thing
         self.bg_image = None
@@ -1378,6 +1431,54 @@ class Function:
                     button.add_function(self.drop_item_all)
                 self.group_buttons.add_objects(button)
 
+        if function_mod == 3:
+            self.title_text.text = f'Попить'
+            self.description_text.text = f'''выпить {self.thing.name} и получить эффекты
+удаление жажды на {self.thing.effect_water}
+увеличение радиации на {-self.thing.effect_radiation}
+удаление голода на {self.thing.effect_hunger}
+повышение отравления на {-self.thing.effect_poison}
+востановление энергии на {self.thing.effect_energy}
+так же измениться истощение на сколько-то'''
+
+            x = self.x + self.w // 2 - self.button_size
+            y = self.y + self.h - self.button_size
+            image = get_free_image('images/action_button_1.png', (self.button_size * 2, self.button_size))
+            button = Button(self.canvas, image, x, y, self.button_size * 2, self.button_size)
+            button.add_function(self.eating)
+            self.group_buttons.add_objects(button)
+
+        if function_mod == 4:
+            self.title_text.text = f'Поесть'
+            self.description_text.text = f'''съесть {self.thing.name} и получить эффекты
+удаление голода на {self.thing.effect_hunger}
+увеличение радиации на {-self.thing.effect_radiation}
+удаление жажды на {self.thing.effect_water}
+повышение отравления на {-self.thing.effect_poison}
+востановление энергии на {self.thing.effect_energy}
+так же измениться истощение на сколько-то'''
+
+            x = self.x + self.w // 2 - self.button_size
+            y = self.y + self.h - self.button_size
+            image = get_free_image('images/action_button_1.png', (
+            self.button_size * 2, self.button_size))
+            button = Button(self.canvas, image, x, y, self.button_size * 2,
+                            self.button_size)
+            button.add_function(self.eating)
+            self.group_buttons.add_objects(button)
+
+
+
+    def eating(self, *args):
+        self.my_inventory.change_thinks(self.thing, -1, self.call)
+        self.my_inventory.player.hunger += self.thing.effect_hunger
+        self.my_inventory.player.water += self.thing.effect_water
+        self.my_inventory.player.poison -= self.thing.effect_poison
+        self.my_inventory.player.radiation -= self.thing.effect_radiation
+        self.my_inventory.player.energy += self.thing.effect_energy
+        self.my_inventory.player.exhaustion -= self.thing.effect_exhaustion
+        self.my_inventory.player.check_condition()
+
 
     def pick_up_an_item_1(self, *args):
         self.location.change_thinks(self.thing, -1, self.call)
@@ -1420,6 +1521,7 @@ class Function:
         self.inventory.change_thinks(self.thing, -self.thing.count, self.call)
 
     def move_to(self, x, y):
+        self.height = self.h
         self.x, self.y = x, y
         self.title_text.x = x + ps_height(0.5)
         self.title_text.y = y + ps_height(1.5)

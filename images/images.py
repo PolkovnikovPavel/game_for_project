@@ -190,7 +190,6 @@ def get_image_btn_search(size):
     return image
 
 
-
 def get_map(size, mod=0):
     map = Image.open('images/map.png')
     map = map.resize(size, Image.ANTIALIAS)
