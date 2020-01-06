@@ -801,6 +801,7 @@ class Player:
         self.change_bleeding = 0
 
         self.armor = 0
+        self.damage = 10
         self.xp_chemistry = 0
         self.xp_survival = 0
         self.xp_mechanics = 0
@@ -1000,6 +1001,10 @@ class Thing(Button):
         self.text_visibility = True
         self.status = False
         self.call = call
+        self.speed = 0
+        if self.name == 'велосепед':
+            self.speed = 23
+
 
         cur = con.cursor()
         query = f'''SELECT * FROM things
@@ -1098,6 +1103,40 @@ class Thing(Button):
                                 button_size=70)
             function.set_bg_image('images/bg_for_function_9.png')
             self.functions.add_object(function)
+
+        if self.type == 3:
+            function_mod = 5
+            x, y = ps_width(51), ps_height(20)
+            w, h = ps_width(46), ps_height(31)
+            function = Function(self.canvas, x, y, w, h, self, self.inventory,
+                                self.location,
+                                self.my_inventory, call=self.call,
+                                function_mod=function_mod,
+                                button_size=70)
+            function.set_bg_image('images/bg_for_function_9.png')
+            self.functions.add_object(function)
+
+        if self.type == 7:
+            function_mod = 6
+            x, y = ps_width(51), ps_height(20)
+            w, h = ps_width(46), ps_height(31)
+            function = Function(self.canvas, x, y, w, h, self, self.inventory,
+                                self.location,
+                                self.my_inventory, call=self.call,
+                                function_mod=function_mod,
+                                button_size=70)
+            function.set_bg_image('images/bg_for_function_9.png')
+            self.functions.add_object(function)
+
+            function_mod = 7
+            function = Function(self.canvas, x, y, w, h, self, self.inventory,
+                                self.location,
+                                self.my_inventory, call=self.call,
+                                function_mod=function_mod,
+                                button_size=70)
+            function.set_bg_image('images/bg_for_function_9.png')
+            self.functions.add_object(function)
+
 
     def open_functions(self):
         self.functions.visibility = True
@@ -1388,6 +1427,8 @@ class Function:
         # 3 - выпить
         # 4 - съесть
         # 5 - применить
+        # 6 - одеть
+        # 7 - снять
 
         name_buttons = []
         name = 'images/action_button_'
@@ -1433,11 +1474,21 @@ class Function:
 
         if function_mod == 3:
             self.title_text.text = f'Попить'
+
+            if self.thing.effect_radiation < 0:
+                t_1 = f'увеличение радиации на {-self.thing.effect_radiation}'
+            else:
+                t_1 = f'уменьшение радиации на {self.thing.effect_radiation}'
+            if self.thing.effect_poison < 0:
+                t_2 = f'повышение отравления на {-self.thing.effect_poison}'
+            else:
+                t_2 = f'уменьшение отравления на {self.thing.effect_poison}'
+
             self.description_text.text = f'''выпить {self.thing.name} и получить эффекты
 удаление жажды на {self.thing.effect_water}
-увеличение радиации на {-self.thing.effect_radiation}
+{t_1}
 удаление голода на {self.thing.effect_hunger}
-повышение отравления на {-self.thing.effect_poison}
+{t_2}
 востановление энергии на {self.thing.effect_energy}
 так же измениться истощение на сколько-то'''
 
@@ -1450,11 +1501,21 @@ class Function:
 
         if function_mod == 4:
             self.title_text.text = f'Поесть'
+
+            if self.thing.effect_radiation < 0:
+                t_1 = f'увеличение радиации на {-self.thing.effect_radiation}'
+            else:
+                t_1 = f'уменьшение радиации на {self.thing.effect_radiation}'
+            if self.thing.effect_poison < 0:
+                t_2 = f'повышение отравления на {-self.thing.effect_poison}'
+            else:
+                t_2 = f'уменьшение отравления на {self.thing.effect_poison}'
+
             self.description_text.text = f'''съесть {self.thing.name} и получить эффекты
 удаление голода на {self.thing.effect_hunger}
-увеличение радиации на {-self.thing.effect_radiation}
+{t_1}
 удаление жажды на {self.thing.effect_water}
-повышение отравления на {-self.thing.effect_poison}
+{t_2}
 востановление энергии на {self.thing.effect_energy}
 так же измениться истощение на сколько-то'''
 
@@ -1467,7 +1528,124 @@ class Function:
             button.add_function(self.eating)
             self.group_buttons.add_objects(button)
 
+        if function_mod == 5:
+            self.title_text.text = f'Применить'
+            if self.thing.effect_radiation < 0:
+                t_1 = f'увеличение радиации на {-self.thing.effect_radiation}'
+            else:
+                t_1 = f'уменьшение радиации на {self.thing.effect_radiation}'
+            if self.thing.effect_poison < 0:
+                t_2 = f'повышение отравления на {-self.thing.effect_poison}'
+            else:
+                t_2 = f'уменьшение отравления на {self.thing.effect_poison}'
 
+            self.description_text.text = f'''съесть {self.thing.name} и получить эффекты
+{t_1}
+{t_2}
+уменьшение кровотечения на {self.thing.effect_bleeding}
+востановление энергии на {self.thing.effect_energy}
+так же измениться истощение на сколько-то'''
+
+            x = self.x + self.w // 2 - self.button_size
+            y = self.y + self.h - self.button_size
+            image = get_free_image('images/action_button_1.png', (
+                self.button_size * 2, self.button_size))
+            button = Button(self.canvas, image, x, y, self.button_size * 2,
+                            self.button_size)
+            button.add_function(self.eating)
+            self.group_buttons.add_objects(button)
+
+        if function_mod == 6:
+            self.title_text.text = f'Надеть'
+            t_1 = ''
+            t_2 = ''
+            t_3 = ''
+            t_4 = ''
+            t_5 = ''
+            t_6 = ''
+
+            if self.thing.armor != 0:
+                t_1 = f'защита: {self.thing.armor}\n'
+            if self.thing.damage != 0:
+                t_2 = f'урон: {self.thing.damage}\n'
+            if self.thing.speed != 0:
+                t_6 = f'скорость: {self.thing.speed}\n'
+            if self.thing.effect_satiety_ps != 0:
+                t_3 = f'эффект сытности: {self.thing.effect_satiety_ps}\n'
+            if self.thing.effect_radiation_ps != 0:
+                t_4 = f'защита от радиации: {self.thing.effect_radiation_ps}\n'
+            if self.thing.effect_light != 0:
+                t_5 = f'повышение освещённости: {self.thing.effect_light}\n'
+
+            self.description_text.text = f'''одеть {self.thing.name} и получить такие параметры
+{t_1}{t_2}{t_6}{t_3}{t_4}{t_5}'''
+
+            x = self.x + self.w // 2 - self.button_size
+            y = self.y + self.h - self.button_size
+            image = get_free_image('images/action_button_1.png', (
+                self.button_size * 2, self.button_size))
+            button = Button(self.canvas, image, x, y, self.button_size * 2,
+                            self.button_size)
+            button.add_function(self.clothe)
+            self.group_buttons.add_objects(button)
+
+        if function_mod == 7:
+            self.title_text.text = f'Снять'
+            t_1 = ''
+            t_2 = ''
+            t_3 = ''
+            t_4 = ''
+            t_5 = ''
+            t_6 = ''
+
+            if self.thing.armor != 0:
+                t_1 = f'защита: 0\n'
+            if self.thing.damage != 0:
+                t_2 = f'урон: 0\n'
+            if self.thing.speed != 0:
+                t_6 = f'скорость: {self.my_inventory.player.start_speed}\n'
+            if self.thing.effect_satiety_ps != 0:
+                t_3 = f'эффект сытности: 0\n'
+            if self.thing.effect_radiation_ps != 0:
+                t_4 = f'защита от радиации: 0\n'
+            if self.thing.effect_light != 0:
+                t_5 = f'повышение освещённости: 0\n'
+
+            self.description_text.text = f'''снять {self.thing.name} и получить такие параметры
+{t_1}{t_2}{t_6}{t_3}{t_4}{t_5}'''
+
+            x = self.x + self.w // 2 - self.button_size
+            y = self.y + self.h - self.button_size
+            image = get_free_image('images/action_button_1.png', (
+                self.button_size * 2, self.button_size))
+            button = Button(self.canvas, image, x, y, self.button_size * 2,
+                            self.button_size)
+            button.add_function(self.take_off)
+            self.group_buttons.add_objects(button)
+
+    def clothe(self, *args):
+        if self.thing.speed != 0:
+            self.my_inventory.player.speed = self.thing.speed
+        if self.thing.armor != 0:
+            self.my_inventory.player.armor = self.thing.armor
+        if self.thing.damage != 0:
+            self.my_inventory.player.damage = self.thing.damage
+        if self.thing.effect_satiety_ps != 0:
+            self.my_inventory.player.effect_satiety = self.thing.effect_satiety_ps
+        if self.thing.effect_radiation_ps != 0:
+            self.my_inventory.player.effect_radiation = self.thing.effect_radiation_ps
+
+    def take_off(self, *args):
+        if self.thing.speed != 0:
+            self.my_inventory.player.speed = self.my_inventory.player.start_speed
+        if self.thing.armor != 0:
+            self.my_inventory.player.armor = 0
+        if self.thing.damage != 0:
+            self.my_inventory.player.damage = 10
+        if self.thing.effect_satiety_ps != 0:
+            self.my_inventory.player.effect_satiety = 0
+        if self.thing.effect_radiation_ps != 0:
+            self.my_inventory.player.effect_radiation = 0
 
     def eating(self, *args):
         self.my_inventory.change_thinks(self.thing, -1, self.call)
@@ -1476,9 +1654,9 @@ class Function:
         self.my_inventory.player.poison -= self.thing.effect_poison
         self.my_inventory.player.radiation -= self.thing.effect_radiation
         self.my_inventory.player.energy += self.thing.effect_energy
+        self.my_inventory.player.bleeding += self.thing.effect_bleeding
         self.my_inventory.player.exhaustion -= self.thing.effect_exhaustion
         self.my_inventory.player.check_condition()
-
 
     def pick_up_an_item_1(self, *args):
         self.location.change_thinks(self.thing, -1, self.call)
@@ -1542,7 +1720,6 @@ class Function:
         self.title_text.show()
         self.description_text.show()
         self.group_buttons.show()
-
 
 
 class GameTime:
