@@ -872,9 +872,9 @@ class Player:
 
         if self.energy < 0:
             self.stop()
-            self.game_time.skip_time(7, self)
-            self.energy = 100   # сделать так чтоб игрок сразу ложился спать
-            self.check_condition()
+            self.energy = 100
+            self.game_time.skip_time(7, self)   # делать так чтоб игрок сразу ложился спать
+            self.energy = 100
         elif self.energy > 100:
             self.energy = 100
 
@@ -1672,6 +1672,7 @@ class Function:
             self.my_inventory.player.effect_radiation = 0
 
     def eating(self, *args):
+        self.my_inventory.player.game_time.skip_time(0.2, self.my_inventory.player)
         self.my_inventory.change_thinks(self.thing, -1, self.call)
         self.my_inventory.player.hunger += self.thing.effect_hunger
         self.my_inventory.player.water += self.thing.effect_water
@@ -1771,7 +1772,16 @@ class GameTime:
 
     def skip_time(self, expectation, player):
         self.expectation_timer = time.time()
+        t_game = 0
         while expectation >= 0:
+            for event in pygame.event.get():
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    pass
+                if event.type == pygame.MOUSEBUTTONUP:
+                    pass
+                if event.type == pygame.MOUSEMOTION:
+                    pass
+
             delte_t = time.time() - self.expectation_timer
             self.expectation_timer = time.time()
             self.num_time += delte_t * 3600
@@ -1779,19 +1789,19 @@ class GameTime:
             self.canvas.blit(self.bg, (0, 0))
 
             t_real = abs(int(expectation + 1))
-            t_game = abs(int(expectation * 60))
+            t_game += delte_t * 60
 
             player.change_all_parametrs(delte_t)
             text = self.font.render(f'{t_real} сек.', 1, WHITE)
             self.canvas.blit(text, (ps_width(45), ps_height(35)))
-            text = self.font.render(f'{t_game} мин.', 1, WHITE)
+            text = self.font.render(f'{int(t_game)} мин.', 1, WHITE)
             self.canvas.blit(text, (ps_width(45), ps_height(67)))
 
             expectation -= delte_t
 
             pygame.display.flip()
         self.time = time.localtime(self.num_time)
-
+        player.check_condition()
 
     def change_game_time(self, timer=None):
         if timer is None:

@@ -1,5 +1,5 @@
 import pygame
-import os
+import os, random
 from System import *
 from images.images import *
 
@@ -41,6 +41,8 @@ def searching_on_call(*args):
     was = call.lies
     call.find_things()
     location.update_thinks(location.convert_thinks_to_object(call.lies.split(';'), ':', ps_width(8.9), call=call))
+    t = random.choice(range(3, 23))
+    game_time.skip_time(t / 10, player)
     location.update_cane_find(call)
     if call.lies != 'NONE' and was == 'NONE':
         BOARD_MAP.board_with_marks.append(call)
