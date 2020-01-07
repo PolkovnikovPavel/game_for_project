@@ -774,7 +774,8 @@ class Player:
         self.game_time = game_time
         self.deathing = None
 
-        self.start_speed = 100
+        self.elementary_speed = 100
+        self.start_speed = self.elementary_speed
         self.speed = self.start_speed
         self.path_length = 0
         self.time_for_way = 0
@@ -870,7 +871,10 @@ class Player:
             self.water = 100
 
         if self.energy < 0:
+            self.stop()
+            self.game_time.skip_time(7, self)
             self.energy = 100   # сделать так чтоб игрок сразу ложился спать
+            self.check_condition()
         elif self.energy > 100:
             self.energy = 100
 
@@ -1000,11 +1004,8 @@ class Thing(Button):
         self.visibility = True
         self.text_visibility = True
         self.status = False
+        self.selected = False
         self.call = call
-        self.speed = 0
-        if self.name == 'велосепед':
-            self.speed = 23
-
 
         cur = con.cursor()
         query = f'''SELECT * FROM things
@@ -1036,6 +1037,12 @@ class Thing(Button):
         self.image = get_free_image(result[19], (w, h))
         self.width = w
         self.height = h
+
+        self.speed = 0
+        self.carrying_capacity = 0
+        if self.name == 'велосепед':
+            self.speed = 20
+            self.carrying_capacity = 70000
 
         self.functions = Window(canvas, None, ps_width(51), ps_height(20), ps_width(46), ps_height(60), 1)
         self.functions.mod = False
@@ -1295,6 +1302,7 @@ class Inventory:
         if my_think not in self.all_thinks:
             w = ps_width(8.9)
             font = pygame.font.Font(None, int(w // 2.7))
+
             my_think = Thing(self.canvas, think.id, self.con, count, think.strength, w,
                              font, self.inventory, self.location, self, call=self.last_call)
             self.groupe_for_thinks.add_objects(think.functions)
@@ -1563,22 +1571,25 @@ class Function:
             t_4 = ''
             t_5 = ''
             t_6 = ''
+            t_7 = ''
 
             if self.thing.armor != 0:
                 t_1 = f'защита: {self.thing.armor}\n'
             if self.thing.damage != 0:
                 t_2 = f'урон: {self.thing.damage}\n'
             if self.thing.speed != 0:
-                t_6 = f'скорость: {self.thing.speed}\n'
+                t_6 = f'скорость: {self.thing.speed // 2} км/ч\n'
             if self.thing.effect_satiety_ps != 0:
                 t_3 = f'эффект сытности: {self.thing.effect_satiety_ps}\n'
             if self.thing.effect_radiation_ps != 0:
                 t_4 = f'защита от радиации: {self.thing.effect_radiation_ps}\n'
             if self.thing.effect_light != 0:
                 t_5 = f'повышение освещённости: {self.thing.effect_light}\n'
+            if self.thing.carrying_capacity != 0:
+                t_7 = f'повышение грузоподъёмности: на {self.thing.carrying_capacity // 1000} кг.\n'
 
             self.description_text.text = f'''одеть {self.thing.name} и получить такие параметры
-{t_1}{t_2}{t_6}{t_3}{t_4}{t_5}'''
+{t_1}{t_2}{t_6}{t_7}{t_3}{t_4}{t_5}'''
 
             x = self.x + self.w // 2 - self.button_size
             y = self.y + self.h - self.button_size
@@ -1597,22 +1608,25 @@ class Function:
             t_4 = ''
             t_5 = ''
             t_6 = ''
+            t_7 = ''
 
             if self.thing.armor != 0:
                 t_1 = f'защита: 0\n'
             if self.thing.damage != 0:
                 t_2 = f'урон: 0\n'
             if self.thing.speed != 0:
-                t_6 = f'скорость: {self.my_inventory.player.start_speed}\n'
+                t_6 = f'скорость: {self.my_inventory.player.elementary_speed // 2} км/ч\n'
             if self.thing.effect_satiety_ps != 0:
                 t_3 = f'эффект сытности: 0\n'
             if self.thing.effect_radiation_ps != 0:
                 t_4 = f'защита от радиации: 0\n'
             if self.thing.effect_light != 0:
                 t_5 = f'повышение освещённости: 0\n'
+            if self.thing.carrying_capacity != 0:
+                t_7 = f'понижение грузоподъёмности: на {self.thing.carrying_capacity // 1000} кг.\n'
 
             self.description_text.text = f'''снять {self.thing.name} и получить такие параметры
-{t_1}{t_2}{t_6}{t_3}{t_4}{t_5}'''
+{t_1}{t_2}{t_6}{t_7}{t_3}{t_4}{t_5}'''
 
             x = self.x + self.w // 2 - self.button_size
             y = self.y + self.h - self.button_size
@@ -1624,8 +1638,13 @@ class Function:
             self.group_buttons.add_objects(button)
 
     def clothe(self, *args):
+        if self.my_inventory == self.location or self.thing.selected:
+            return
+        self.thing.selected = True
+        self.my_inventory.player.max_heft += self.thing.carrying_capacity
+        self.inventory.heft -= self.thing.heft
         if self.thing.speed != 0:
-            self.my_inventory.player.speed = self.thing.speed
+            self.my_inventory.player.start_speed = self.thing.speed
         if self.thing.armor != 0:
             self.my_inventory.player.armor = self.thing.armor
         if self.thing.damage != 0:
@@ -1636,8 +1655,13 @@ class Function:
             self.my_inventory.player.effect_radiation = self.thing.effect_radiation_ps
 
     def take_off(self, *args):
+        if not self.thing.selected:
+            return
+        self.inventory.heft += self.thing.heft
+        self.my_inventory.player.max_heft -= self.thing.carrying_capacity
+        self.thing.selected = False
         if self.thing.speed != 0:
-            self.my_inventory.player.speed = self.my_inventory.player.start_speed
+            self.my_inventory.player.start_speed = self.my_inventory.player.elementary_speed
         if self.thing.armor != 0:
             self.my_inventory.player.armor = 0
         if self.thing.damage != 0:
@@ -1679,22 +1703,27 @@ class Function:
         self.inventory.change_thinks(self.thing, self.thing.count, self.call)
 
     def drop_item_1(self, *args):
+        if self.thing.selected:
+            return
         self.location.change_thinks(self.thing, 1, self.call)
         self.inventory.change_thinks(self.thing, -1, self.call)
 
     def drop_item_10(self, *args):
-        if 10 > self.thing.count:
+        if 10 > self.thing.count or self.thing.selected:
             return
+
         self.location.change_thinks(self.thing, 10, self.call)
         self.inventory.change_thinks(self.thing, -10, self.call)
 
     def drop_item_100(self, *args):
-        if 100 > self.thing.count:
+        if 100 > self.thing.count or self.thing.selected:
             return
         self.location.change_thinks(self.thing, 100, self.call)
         self.inventory.change_thinks(self.thing, -100, self.call)
 
     def drop_item_all(self, *args):
+        if self.thing.selected:
+            return
         self.location.change_thinks(self.thing, self.thing.count, self.call)
         self.inventory.change_thinks(self.thing, -self.thing.count, self.call)
 
@@ -1724,10 +1753,13 @@ class Function:
 
 class GameTime:
     def __init__(self, t, canvas):
+        self.bg = get_bg_for_time((width, height))
         self.num_time = t
         self.canvas = canvas
         self.time = time.localtime(t)
         self.timer = 0
+        self.expectation_timer = 0
+
         self.real_timer = time.time()
         self.font = pygame.font.Font(None, ps_width(2))
 
@@ -1737,8 +1769,35 @@ class GameTime:
     def update_time(self):
         self.time = time.localtime(self.num_time)
 
-    def change_game_time(self):
-        delte_t = time.time() - self.timer
+    def skip_time(self, expectation, player):
+        self.expectation_timer = time.time()
+        while expectation >= 0:
+            delte_t = time.time() - self.expectation_timer
+            self.expectation_timer = time.time()
+            self.num_time += delte_t * 3600
+
+            self.canvas.blit(self.bg, (0, 0))
+
+            t_real = abs(int(expectation + 1))
+            t_game = abs(int(expectation * 60))
+
+            player.change_all_parametrs(delte_t)
+            text = self.font.render(f'{t_real} сек.', 1, WHITE)
+            self.canvas.blit(text, (ps_width(45), ps_height(35)))
+            text = self.font.render(f'{t_game} мин.', 1, WHITE)
+            self.canvas.blit(text, (ps_width(45), ps_height(67)))
+
+            expectation -= delte_t
+
+            pygame.display.flip()
+        self.time = time.localtime(self.num_time)
+
+
+    def change_game_time(self, timer=None):
+        if timer is None:
+            delte_t = time.time() - self.timer
+        else:
+            delte_t = time.time() - timer
         self.num_time += delte_t * 3600
         self.time = time.localtime(self.num_time)
         self.timer = time.time()

@@ -150,6 +150,17 @@ def get_image_btn_new_start_main(size):
     return image
 
 
+def get_bg_for_time(size):
+    image = Image.open('images/bg_for_time.png')
+    image = image.resize(size, Image.ANTIALIAS)
+
+    mode = image.mode
+    data = image.tobytes()
+    image = pygame.image.fromstring(data, size, mode)
+    return image
+
+
+
 def get_image_btn_new_start_main_click(size):
     image = Image.open('images/btn_new_start_main_click.png')
     image = image.resize(size, Image.ANTIALIAS)

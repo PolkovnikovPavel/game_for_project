@@ -56,7 +56,7 @@ def save():
     text += str(int(player.energy)) + ';'
     text += str(int(player.bleeding)) + ';'
     text += str(player.temperature) + ';'
-    text += str(player.max_heft) + ';'
+    text += str(50000) + ';'
 
     text += str(player.armor) + ';'
     text += str(player.xp_chemistry) + ';'
@@ -251,19 +251,19 @@ def create_all_objects():
     image = get_bg_main_window(size)
     bg_main_window = Object(screen, image, 0, 0, *size)
 
-    image = get_btn_exit_main((200, 50))
-    image_2 = get_btn_exit_main_click((200, 50))
-    btn_exit_main = Button(screen, image, width / 2 - 100, height / 2 + 300, 200, 50, exit, image_2)
+    image = get_btn_exit_main((370, 50))
+    image_2 = get_btn_exit_main_click((370, 50))
+    btn_exit_main = Button(screen, image, ps_width(68), ps_height(55), 370, 50, exit, image_2)
 
-    image = get_btn_start_main((200, 50))
-    image_2 = get_btn_start_main_click((200, 50))
-    btn_continue_game_main = Button(screen, image, width / 2 - 100, height / 2 + 200,
-                           200, 50, continue_game, image_2)
+    image = get_btn_start_main((370, 50))
+    image_2 = get_btn_start_main_click((370, 50))
+    btn_continue_game_main = Button(screen, image, ps_width(68), ps_height(37),
+                           370, 50, continue_game, image_2)
 
-    image = get_image_btn_new_start_main((200, 50))
-    image_2 = get_image_btn_new_start_main_click((200, 50))
-    btn_start_new_main = Button(screen, image, width / 2 - 100, height / 2 + 100,
-                            200, 50, start_new_game, image_2)
+    image = get_image_btn_new_start_main((370, 50))
+    image_2 = get_image_btn_new_start_main_click((370, 50))
+    btn_start_new_main = Button(screen, image, ps_width(68), ps_height(28),
+                            370, 50, start_new_game, image_2)
 
     image = get_pygame_image(image_map)
     main_map = Object(screen, image, map_x, map_y, 3906 * zoom, 2047 * zoom)
