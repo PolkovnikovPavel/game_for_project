@@ -34,108 +34,108 @@ def change_parametrs(id):
             NONE
             NONE'''
     elif id[0] == 2:
-        parametrs = '''2;(x,y);15;0;0.85
-                    2:75:0;3:15:0
+        parametrs = '''2;(x,y);15;0;0.90
+                    2:75:0;3:15:0;70:10:0
                     NONE
                     NONE'''
     elif id[0] == 3:
-        parametrs = '''3;(x,y);0;0;1
-            NONE
+        parametrs = '''3;(x,y);20;0;0.70
+            2:80:0;3:20:0;70:40:0
             NONE
             NONE'''
     elif id[0] == 4:
-        parametrs = '''4;(x,y);0;0;1
-            NONE
+        parametrs = '''4;(x,y);20;0;0.90
+            70:15:0;3:20:0;71:140:0
             NONE
             NONE'''
     elif id[0] == 5:
-        parametrs = '''5;(x,y);0;0;1
-            NONE
+        parametrs = '''5;(x,y);5;0;1
+            70:5:0;3:1:0;71:5:0
             NONE
             NONE'''
     elif id[0] == 6:
-        parametrs = '''6;(x,y);0;0;1
-            NONE
+        parametrs = '''6;(x,y);0;1;0.85
+            2:75:0;3:15:0;70:10:0
             NONE
             NONE'''
     elif id[0] == 7:
-        parametrs = '''7;(x,y);0;0;1
-            NONE
+        parametrs = '''7;(x,y);5;2;1
+            70:5:0;3:1:0;71:5:0
             NONE
             NONE'''
     elif id[0] == 8:
-        parametrs = '''8;(x,y);0;0;1
-            NONE
+        parametrs = '''8;(x,y);3;0;1.5
+            71:15:0;3:1:0
             NONE
             NONE'''
     elif id[0] == 9:
-        parametrs = '''9;(x,y);0;0;1
-            NONE
+        parametrs = '''9;(x,y);3;2;1.6
+            71:15:0;3:1:0
             NONE
             NONE'''
     elif id[0] == 10:
-        parametrs = '''10;(x,y);0;0;1
-            NONE
+        parametrs = '''10;(x,y);3;1;1.5
+            71:15:0;3:1:0;65:1:0
             NONE
             NONE'''
     elif id[0] == 11:
-        parametrs = '''11;(x,y);0;0;1
-            NONE
+        parametrs = '''11;(x,y);3;1;1.5
+            71:15:0;3:1:0
             NONE
             NONE'''
     elif id[0] == 12:
-        parametrs = '''12;(x,y);0;0;1
-            NONE
+        parametrs = '''12;(x,y);3;1;1.5
+            71:15:0;3:1:0
             NONE
             NONE'''
     elif id[0] == 13:
-        parametrs = '''13;(x,y);0;0;1
-            NONE
+        parametrs = '''13;(x,y);4;3;0.4
+            13:1:0;21:8:0;43:2:0;9:16:0;10:16:0;1:2:0
             NONE
             NONE'''
     elif id[0] == 14:
-        parametrs = '''14;(x,y);0;0;1
-            NONE
+        parametrs = '''14;(x,y);4;3;0.4
+            43:12:0;44:20:0;26:1:0;1:2:0;4:40:0
             NONE
             NONE'''
     elif id[0] == 15:
-        parametrs = '''15;(x,y);0;0;1
-            NONE
+        parametrs = '''15;(x,y);4;4;0.3
+            1:20:0;33:8:720;28:1:39200;60:2:480;46:16:0;57:24:0
             NONE
             NONE'''
     elif id[0] == 16:
-        parametrs = '''16;(x,y);0;0;1
-            NONE
+        parametrs = '''16;(x,y);3;4;0.6
+            6:70002:0;33:3:720;1:6:0;67:1:0
             NONE
             NONE'''
     elif id[0] == 17:
-        parametrs = '''17;(x,y);0;0;1
-            NONE
+        parametrs = '''17;(x,y);3;4;0.6
+            6:70002:0;33:3:720;1:6:0;67:1:0
             NONE
             NONE'''
     elif id[0] == 18:
-        parametrs = '''18;(x,y);0;0;1
-            NONE
+        parametrs = '''18;(x,y);4;4;0.3
+            1:20:0;33:8:720;28:1:39200;60:2:480;46:16:0;57:24:0
             NONE
             NONE'''
     elif id[0] == 19:
-        parametrs = '''19;(x,y);0;0;1
-            NONE
+        parametrs = '''19;(x,y);5;2;0.4
+            1:50:0;25:1:100;57:15:0;21:1:0
             NONE
             NONE'''
     elif id[0] == 20:
-        parametrs = '''20;(x,y);0;0;1
-            NONE
+        parametrs = '''20;(x,y);4;2;0.4
+            1:40:0;25:1:100;57:12:0;21:20:0
             NONE
             NONE'''
     elif id[0] == 21:
-        parametrs = '''21;(x,y);0;0;1
-            NONE
+        parametrs = '''21;(x,y);3;2;0.3
+            2:15:0;70:3:0;43:1:0;3:3:0
             NONE
             NONE'''
     elif id[0] == 22:
-        parametrs = '''22;(x,y);0;0;1
-            NONE
+        parametrs = '''22;(x,y);2;3;0.4
+            57:10:0;43:1:0
             NONE
             NONE'''
     elif id[0] == 23:
@@ -144,28 +144,28 @@ def change_parametrs(id):
             NONE
             NONE'''
     elif id[0] == 24:
-        parametrs = '''24;(x,y);0;0;1
-            NONE
+        parametrs = '''24;(x,y);3;4;0.5
+            4:3:0;42:3:0;40:2:0;39:2:0;36:6:0;35:6:0
             NONE
             NONE'''
     elif id[0] ==25:
-        parametrs = '''25;(x,y);0;0;1
-            NONE
+        parametrs = '''25;(x,y);3;4;0.5
+            4:3:0;42:3:0;40:2:0;39:2:0;36:6:0;35:9:0
             NONE
             NONE'''
     elif id[0] == 26:
-        parametrs = '''26;(x,y);0;0;1
-            NONE
+        parametrs = '''26;(x,y);1;3;1
+            65:1:0
             NONE
             NONE'''
     elif id[0] == 27:
-        parametrs = '''27;(x,y);0;0;1
-            NONE
+        parametrs = '''27;(x,y);3;4;0.7
+            65:1:0;6:1500:0;10:546:0;26:2:0;45:333:0;9:543:0;3:3:0
             NONE
             NONE'''
     elif id[0] == 28:
-        parametrs = '''28;(x,y);0;0;1
-            NONE
+        parametrs = '''28;(x,y);6;4;0.7
+            65:1:0;6:3000:0;10:546:0;26:2:0;45:333:0;9:543:0;3:6:0
             NONE
             NONE'''
     elif id[0] == 29:
@@ -229,23 +229,23 @@ def change_parametrs(id):
             NONE
             NONE'''
     elif id[0] == 41:
-        parametrs = '''41;(x,y);0;0;1
-            NONE
+        parametrs = '''41;(x,y);3;2;1
+            3:6:0;1:6:0
             NONE
             NONE'''
     elif id[0] == 42:
-        parametrs = '''42;(x,y);0;0;1
-            NONE
+        parametrs = '''42;(x,y);2;0;0.8
+            3:16:0;70:8:0
             NONE
             NONE'''
     elif id[0] == 43:
-        parametrs = '''43;(x,y);0;0;1
-            NONE
+        parametrs = '''43;(x,y);2;2;0.8
+            3:16:0;70:8:0
             NONE
             NONE'''
     elif id[0] == 44:
-        parametrs = '''44;(x,y);0;0;1
-            NONE
+        parametrs = '''44;(x,y);5;0;0.25
+            3:90:0;1:15;0
             NONE
             NONE'''
     elif id[0] == 45:
@@ -1043,6 +1043,8 @@ class Thing(Button):
         if self.name == 'велосепед':
             self.speed = 20
             self.carrying_capacity = 70000
+        elif self.name == 'чемодан':
+            self.carrying_capacity = 30000
 
         self.functions = Window(canvas, None, ps_width(51), ps_height(20), ps_width(46), ps_height(60), 1)
         self.functions.mod = False
@@ -1062,7 +1064,7 @@ class Thing(Button):
                 expiration_text = f'испортится через {self.strength} часов'
             else:
                 expiration_text = f'никогда не испортится'
-        elif self.type == 4 or self.type == 6 or self.type == 7:
+        elif self.type == 4 or self.type == 6 or self.type == 7 or self.type == 11:
             if self.strength != 0:
                 expiration_text = f'сломается через {self.strength} применений'
             else:
@@ -1079,13 +1081,14 @@ class Thing(Button):
         if self.my_inventory == self.inventory:
             function_mod = 2
 
-        x, y = ps_width(51), ps_height(20)
-        w, h = ps_width(46), ps_height(20)
-        function = Function(self.canvas, x, y, w, h, self, self.inventory, self.location,
-                            self.my_inventory, call=self.call, function_mod=function_mod,
-                            button_size=70)
-        function.set_bg_image()
-        self.functions.add_object(function)
+        if self.type != 11:
+            x, y = ps_width(51), ps_height(20)
+            w, h = ps_width(46), ps_height(20)
+            function = Function(self.canvas, x, y, w, h, self, self.inventory, self.location,
+                                self.my_inventory, call=self.call, function_mod=function_mod,
+                                button_size=70)
+            function.set_bg_image()
+            self.functions.add_object(function)
 
         if self.type == 9:
             function_mod = 3
@@ -1334,6 +1337,8 @@ class Inventory:
 
 
     def change_thinks(self, think, count, call):
+        if think.count <= 0:
+            return
         my_think = self.find_think(think)
         think = copy.copy(think)
 
