@@ -22,7 +22,7 @@ def start_new_game(*args):
     description_map.close()
 
     description_player = open('data/SaveGame.txt', 'w')
-    text = '''0;100;100;0;0;100;0;36.6;50000;0;0;0;0;0;5;5;0;1.5;3;-0.5;0;4;0;0;622080000</>
+    text = '''0;100;100;0;0;100;0;36.6;50000;0;0;0;0;0;700;500;0;1.5;3;-0.5;0;4;0;0;622080000</>
 21;30;0, 33;5;720, 26;2;0, 25;1;0, 28;1;19000, 4;40;0</>'''
     description_player.write(text)
     description_player.close()
@@ -253,17 +253,17 @@ def create_all_objects():
     image = get_bg_main_window(size)
     bg_main_window = Object(screen, image, 0, 0, *size)
 
-    image = get_btn_exit_main((370, 50))
-    image_2 = get_btn_exit_main_click((370, 50))
+    image = get_free_image('images/btn_exit_main_2.png', (ps_height(37), ps_height(5)))
+    image_2 = get_free_image('images/btn_exit_main_click_2.png', (ps_height(37), ps_height(5)))
     btn_exit_main = Button(screen, image, ps_width(68), ps_height(55), 370, 50, exit, image_2)
 
-    image = get_btn_start_main((370, 50))
-    image_2 = get_btn_start_main_click((370, 50))
+    image = get_free_image('images/btn_start_main_2.png', (ps_height(37), ps_height(5)))
+    image_2 = get_free_image('images/btn_start_main_click_2.png', (ps_height(37), ps_height(5)))
     btn_continue_game_main = Button(screen, image, ps_width(68), ps_height(37),
                            370, 50, continue_game, image_2)
 
-    image = get_image_btn_new_start_main((370, 50))
-    image_2 = get_image_btn_new_start_main_click((370, 50))
+    image = get_free_image('images/btn_new_start_main_2.png', (ps_height(37), ps_height(5)))
+    image_2 = get_free_image('images/btn_new_start_main_click_2.png', (ps_height(37), ps_height(5)))
     btn_start_new_main = Button(screen, image, ps_width(68), ps_height(28),
                             370, 50, start_new_game, image_2)
 
@@ -281,32 +281,32 @@ def create_all_objects():
 
     objects_map.add_objects(main_btn_bar, main_objects_bar)
 
-    image = get_image_btn_for_main_map_window((ps_width(14.2), ps_height(9.9)))
+    image = get_image_btn_for_main_map_window_1((ps_width(14.2), ps_height(9.9)))
     btn = Button(screen, image, 0, ps_height(89.6), ps_width(14.2), ps_height(9.9))
     btn.add_function(opening_main_window)
     objects_map.add_objects(btn)
 
-    image = get_image_btn_for_main_map_window((ps_width(14.2), ps_height(9.9)))
+    image = get_image_btn_for_main_map_window_2((ps_width(14.2), ps_height(9.9)))
     btn = Button(screen, image, ps_width(14.2), ps_height(89.6), ps_width(14.2), ps_height(9.9))
-    btn.add_function(opening_statistics)
-    objects_map.add_objects(btn)
-
-    image = get_image_btn_for_main_map_window((ps_width(14.2), ps_height(9.9)))
-    btn = Button(screen, image, ps_width(28.6), ps_height(89.6), ps_width(14.2), ps_height(9.9))
     btn.add_function(opening_quests)
     objects_map.add_objects(btn)
 
-    image = get_image_btn_for_main_map_window((ps_width(14.2), ps_height(9.9)))
+    image = get_image_btn_for_main_map_window_3((ps_width(14.2), ps_height(9.9)))
+    btn = Button(screen, image, ps_width(28.6), ps_height(89.6), ps_width(14.2), ps_height(9.9))
+    btn.add_function(opening_statistics)
+    objects_map.add_objects(btn)
+
+    image = get_image_btn_for_main_map_window_6((ps_width(14.2), ps_height(9.9)))
     btn = Button(screen, image, ps_width(85.8), ps_height(89.6), ps_width(14.2), ps_height(9.9))
     btn.add_function(open_map)
     objects_map.add_objects(btn)
 
-    image = get_image_btn_for_main_map_window((ps_width(14.2), ps_height(9.9)))
+    image = get_image_btn_for_main_map_window_5((ps_width(14.2), ps_height(9.9)))
     btn = Button(screen, image, ps_width(71.6), ps_height(89.6), ps_width(14.2), ps_height(9.9))
     btn.add_function(change_inventory_type_to_location)
     objects_map.add_objects(btn)
 
-    image = get_image_btn_for_main_map_window((ps_width(14.2), ps_height(9.9)))
+    image = get_image_btn_for_main_map_window_4((ps_width(14.2), ps_height(9.9)))
     btn = Button(screen, image, ps_width(57.4), ps_height(89.6), ps_width(14.2), ps_height(9.9))
     btn.add_function(opening_inventory)
     objects_map.add_objects(btn)
@@ -350,9 +350,21 @@ def create_all_objects():
     btn.add_function(opening_inventory)
     objects_inventory.add_objects(btn)
 
+    image = get_free_image('images/btn_location_on_location.png', (ps_width(7.5), ps_height(17.9)))
+    btn = Button(screen, image, ps_width(40), ps_height(8), ps_width(7.5), ps_height(17.9))
+    btn.add_function(change_inventory_type_to_location)
+    objects_inventory.add_objects(btn)
+
     image = get_image_btn_search((ps_width(14), ps_height(5)))
     btn_searching = Button(screen, image, ps_width(68), ps_height(78), ps_width(14), ps_height(5))
     btn_searching.add_function(searching_on_call)
+
+
+
+    image = get_free_image('images/bg_for_tasks.png', (width, height))
+    object = Object(screen, image, 0, 0, width, height)
+    objects_statistics.add_objects(object)
+
 
 
 FPS = 100
@@ -388,6 +400,7 @@ image_map = cat_image(main_image_map, (map_x_on_main_map, map_y_on_main_map,
 objects_main = Group()
 objects_map = Group()
 objects_inventory = Group()
+objects_statistics = Group()
 
 type_window = 'main_window'
 
@@ -566,6 +579,8 @@ while running:
                     location.update_call(call)
                     inventory.update_call(call)
 
+    if type_window == 'statistics':
+        objects_statistics.show()
 
     if type_window == 'inventory':
         inventory.show()

@@ -123,6 +123,8 @@ moving_map = False
 highlighting_call = False
 clock = pygame.time.Clock()
 x, y = 0, 0
+start_x = 0
+start_y = 0
 
 while running:
     clock.tick(FPS)
@@ -154,6 +156,8 @@ while running:
 
                 elif event.button == 3:
                     highlighting_call = True
+                    start_x = x
+                    start_y = y
 
 
             if event.button == 5:  # скрол вниз
@@ -204,8 +208,17 @@ while running:
                     parametrs = object.click(object.id)
 
             moving_map = False
-            highlighting_call = False
             tool_bar_map.paging = False
+
+            if highlighting_call:
+                coord = BOARD.get_cell((x, y))
+                end_coord = BOARD.get_cell((start_x, start_y))
+                for i in range(coord[0], end_coord[0]):
+                    for j in range(coord[1], end_coord[1]):
+                        BOARD.board[j][i].change_parametrs(parametrs)
+                highlighting_call = False
+
+
 
         if event.type == pygame.MOUSEMOTION:
             x, y = event.pos
@@ -235,6 +248,12 @@ while running:
     main_map.show()
 
     if highlighting_call:
+        w = (start_x - x)
+        h = (start_y - y)
+        pygame.draw.rect(screen, RED, (x, y, w, h), 1)
+
+
+
         coord = BOARD.get_cell((x, y))
         if coord is not None:
             j, i = coord

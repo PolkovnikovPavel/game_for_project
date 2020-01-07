@@ -35,7 +35,7 @@ def change_parametrs(id):
             NONE'''
     elif id[0] == 2:
         parametrs = '''2;(x,y);15;0;0.90
-                    2:75:0;3:15:0;70:10:0
+                    2:75:0;3:15:0;70:10:0;1:2:0
                     NONE
                     NONE'''
     elif id[0] == 3:
@@ -476,7 +476,7 @@ class Call:
         if not self.visibility or x < 0 or y < 0 or x > 1700 or y > 1000:
             return
         pygame.draw.rect(self.canvas, self.color, (x, y, self.size, self.size), 1)
-        if self.id != '0':
+        if self.id != '0' and str(self.id) != '1':
             text = font.render(self.id, 1, WHITE)
             self.canvas.blit(text, (x + 2, y + 4))
 
@@ -774,7 +774,7 @@ class Player:
         self.game_time = game_time
         self.deathing = None
 
-        self.elementary_speed = 100
+        self.elementary_speed = 10
         self.start_speed = self.elementary_speed
         self.speed = self.start_speed
         self.path_length = 0
@@ -1006,6 +1006,7 @@ class Thing(Button):
         self.status = False
         self.selected = False
         self.call = call
+        self.con = con
 
         cur = con.cursor()
         query = f'''SELECT * FROM things
@@ -1052,12 +1053,6 @@ class Thing(Button):
         self.update_function()
 
     def update_text(self):
-        text = f'{self.name}\nВес: {self.heft * self.count}г.\n...\n...'
-        self.functions.objects[0].text = text
-
-    def update_function(self):
-        self.functions.delete_all_objects()
-
         expiration_text = '...'
         if self.type == 9 or self.type == 2 or self.type == 3:
             if self.strength != 0:
@@ -1071,11 +1066,16 @@ class Thing(Button):
                 expiration_text = f'продержется больше чем ваша жизнь!'
 
         text = f'{self.name}\nВес: {self.heft * self.count}г.\n{expiration_text}\n...'
+        self.functions.objects[0].text = text
+
+    def update_function(self):
+        self.functions.delete_all_objects()
+
         font = pygame.font.Font(None, ps_width(1.8))
-        text = Text(self.canvas, 0, 0, text, font)
+        text = Text(self.canvas, 0, 0, '\n\n\n', font)
         text.color = BLACK
         self.functions.add_object(text)
-
+        self.update_text()
 
         function_mod = 1
         if self.my_inventory == self.inventory:
@@ -1139,6 +1139,18 @@ class Thing(Button):
             self.functions.add_object(function)
 
             function_mod = 7
+            function = Function(self.canvas, x, y, w, h, self, self.inventory,
+                                self.location,
+                                self.my_inventory, call=self.call,
+                                function_mod=function_mod,
+                                button_size=70)
+            function.set_bg_image('images/bg_for_function_9.png')
+            self.functions.add_object(function)
+
+        if self.type == 10:
+            function_mod = 8
+            x, y = ps_width(51), ps_height(20)
+            w, h = ps_width(46), ps_height(31)
             function = Function(self.canvas, x, y, w, h, self, self.inventory,
                                 self.location,
                                 self.my_inventory, call=self.call,
@@ -1243,7 +1255,6 @@ class Inventory:
         w = ps_width(44.1)
         h = ps_height(56.8)
 
-        #image = get_bg_for_thinks_in_inventory((w, h))
         self.window = Window(self.canvas, None, x, y, w, h, 5)
         self.window.visibility = True
         self.window.width_object = ps_width(8.9)
@@ -1442,6 +1453,7 @@ class Function:
         # 5 - применить
         # 6 - одеть
         # 7 - снять
+        # 8 - открыть
 
         name_buttons = []
         name = 'images/action_button_'
@@ -1641,6 +1653,78 @@ class Function:
                             self.button_size)
             button.add_function(self.take_off)
             self.group_buttons.add_objects(button)
+
+        if function_mod == 8:
+            self.title_text.text = f'Открыть'
+
+            self.description_text.text = f'''открыть {self.thing.name} и получить:
+ * спички Х 20
+ * шашлык Х 2
+ * чемодан Х 1
+ * вода(чистая) Х 25
+ * инструменты Х 1
+ * лопата Х 1
+ * порох Х 500'''
+
+            x = self.x + self.w // 2 - self.button_size
+            y = self.y + self.h - self.button_size
+            image = get_free_image('images/action_button_1.png', (
+                self.button_size * 2, self.button_size))
+            button = Button(self.canvas, image, x, y, self.button_size * 2,
+                            self.button_size)
+            button.add_function(self.take_think)
+            self.group_buttons.add_objects(button)
+
+    def take_think(self, *args):
+        think = Thing(self.canvas, 21, self.thing.con, 20, 0, font=self.thing.font,
+                      inventory=self.inventory, location=self.location, my_inventory=self.location,
+                      call=self.thing.call, w=ps_width(8.9))
+        self.location.change_thinks(think, 20, self.thing.call)
+
+        think = Thing(self.canvas, 54, self.thing.con, 2, 0, font=self.thing.font,
+                      inventory=self.inventory, location=self.location,
+                      my_inventory=self.location,
+                      call=self.thing.call, w=ps_width(8.9))
+        self.location.change_thinks(think, 2, self.thing.call)
+
+        self.my_inventory.player.game_time.skip_time(0.5, self.my_inventory.player)
+
+        think = Thing(self.canvas, 67, self.thing.con, 1, 0,
+                      font=self.thing.font,
+                      inventory=self.inventory, location=self.location,
+                      my_inventory=self.location,
+                      call=self.thing.call, w=ps_width(8.9))
+        self.location.change_thinks(think, 1, self.thing.call)
+
+        think = Thing(self.canvas, 33, self.thing.con, 25, 0,
+                      font=self.thing.font,
+                      inventory=self.inventory, location=self.location,
+                      my_inventory=self.location,
+                      call=self.thing.call, w=ps_width(8.9))
+        self.location.change_thinks(think, 25, self.thing.call)
+
+        think = Thing(self.canvas, 25, self.thing.con, 1, 0,
+                      font=self.thing.font,
+                      inventory=self.inventory, location=self.location,
+                      my_inventory=self.location,
+                      call=self.thing.call, w=ps_width(8.9))
+        self.location.change_thinks(think, 1, self.thing.call)
+
+        think = Thing(self.canvas, 23, self.thing.con, 1, 0,
+                      font=self.thing.font,
+                      inventory=self.inventory, location=self.location,
+                      my_inventory=self.location,
+                      call=self.thing.call, w=ps_width(8.9))
+        self.location.change_thinks(think, 1, self.thing.call)
+
+        think = Thing(self.canvas, 11, self.thing.con, 500, 0,
+                      font=self.thing.font,
+                      inventory=self.inventory, location=self.location,
+                      my_inventory=self.location,
+                      call=self.thing.call, w=ps_width(8.9))
+        self.location.change_thinks(think, 500, self.thing.call)
+
+        self.my_inventory.change_thinks(self.thing, -1, self.call)
 
     def clothe(self, *args):
         if self.my_inventory == self.location or self.thing.selected:

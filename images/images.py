@@ -140,6 +140,65 @@ def get_image_btn_for_main_map_window(size):
     return image
 
 
+def get_image_btn_for_main_map_window_1(size):
+    image = Image.open('images/btn_for_main_map_window_1.jpg')
+    image = image.resize(size, Image.ANTIALIAS)
+
+    mode = image.mode
+    data = image.tobytes()
+    image = pygame.image.fromstring(data, size, mode)
+    return image
+
+def get_image_btn_for_main_map_window_2(size):
+    image = Image.open('images/btn_for_main_map_window_2.jpg')
+    image = image.resize(size, Image.ANTIALIAS)
+
+    mode = image.mode
+    data = image.tobytes()
+    image = pygame.image.fromstring(data, size, mode)
+    return image
+
+
+def get_image_btn_for_main_map_window_3(size):
+    image = Image.open('images/btn_for_main_map_window_3.jpg')
+    image = image.resize(size, Image.ANTIALIAS)
+
+    mode = image.mode
+    data = image.tobytes()
+    image = pygame.image.fromstring(data, size, mode)
+    return image
+
+
+def get_image_btn_for_main_map_window_4(size):
+    image = Image.open('images/btn_for_main_map_window_4.jpg')
+    image = image.resize(size, Image.ANTIALIAS)
+
+    mode = image.mode
+    data = image.tobytes()
+    image = pygame.image.fromstring(data, size, mode)
+    return image
+
+
+def get_image_btn_for_main_map_window_5(size):
+    image = Image.open('images/btn_for_main_map_window_5.jpg')
+    image = image.resize(size, Image.ANTIALIAS)
+
+    mode = image.mode
+    data = image.tobytes()
+    image = pygame.image.fromstring(data, size, mode)
+    return image
+
+
+def get_image_btn_for_main_map_window_6(size):
+    image = Image.open('images/btn_for_main_map_window_6.jpg')
+    image = image.resize(size, Image.ANTIALIAS)
+
+    mode = image.mode
+    data = image.tobytes()
+    image = pygame.image.fromstring(data, size, mode)
+    return image
+
+
 def get_image_btn_new_start_main(size):
     image = Image.open('images/btn_new_start_main.png')
     image = image.resize(size, Image.ANTIALIAS)
