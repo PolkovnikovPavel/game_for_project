@@ -27,6 +27,12 @@ def start_new_game(*args):
     description_player.write(text)
     description_player.close()
     show_starting_slides(3, "bmp")
+    # ставит все квесты в начальное положение
+    tasks_connect = sqlite3.connect("data/tasks_base.db")
+    tasks_cursor = tasks_connect.cursor()
+    tasks_cursor.execute("UPDATE tasks SET progress = 0")
+    tasks_connect.commit()
+
     start()
 
 
@@ -59,6 +65,7 @@ def show_starting_slides(number, format):
         all_sparks.draw(screen)
         pygame.display.flip()
 
+
 def continue_game(*args):
     if os.path.exists('map/description_map.txt'):
         start()
@@ -76,6 +83,7 @@ def searching_on_call(*args):
     location.update_cane_find(call)
     if call.lies != 'NONE' and was == 'NONE':
         BOARD_MAP.board_with_marks.append(call)
+
 
 def save():
     description_player = open('data/SaveGame.txt', 'w')
@@ -125,7 +133,7 @@ def save():
 
 
 def start(*args):
-    global type_window, inventory, location, BOARD_MAP, tasks, selected_task
+    global type_window, inventory, location, BOARD_MAP, tasks, selected_task, tasks_connect
 
     objects_main.off_all()
     main_map.visibility = True
@@ -136,7 +144,8 @@ def start(*args):
 
     tasks = Tasks(screen, None)
     tasks.bg_image = get_bg_for_tasks((width, ps_height(83.2)))
-    selected_task = 1
+    selected_task = 0
+    tasks_connect = sqlite3.connect("data/tasks_base.db")
 
     file = open('map/description_map.txt', 'r')
     font = pygame.font.Font(None, zoom * 10)
@@ -153,6 +162,7 @@ def start(*args):
     update_image_map()
 
     type_window = 'main'
+
 
 def show_and_change_all_options():
     texts_of_options_player[0].change_text(int(player.exhaustion))
@@ -195,22 +205,52 @@ def opening_tasks(*args):
     type_window = 'tasks'
 
 
-def change_num_task(*args):
+def change_num_task(*args):  # определяет описание какой задачи нужно вывести
     global selected_task
-    x, y = pygame.mouse.get_pos()
-    selected_task = ((y - 75) // 45) + 1
-
-
-def show_info_from_task(num):
+    last_selected_task = selected_task
     con = sqlite3.connect("data/tasks_base.db")
     cur = con.cursor()
-    actual_tasks = cur.execute("SELECT text, name from tasks WHERE id IN(?)", (num,)).fetchone()
-    name_font = pygame.font.SysFont('arial', 48)
-    text_font = pygame.font.SysFont('arial', 24)
-    name = Text(screen, 350, 80, actual_tasks[1], name_font, color=BLACK)
-    text = Text(screen, 350, 160, actual_tasks[0], text_font, color=BLACK)
-    name.show()
-    text.show()
+    result = cur.execute("SELECT id from tasks WHERE progress IN(1) AND type_id IN(1)").fetchall()
+    x, y = pygame.mouse.get_pos()
+    num = ((y - ps_height(10.5)) // ps_height(6.3))
+    if num < len(result):
+        selected_task = result[num][0]
+    else:
+        selected_task = last_selected_task
+
+
+def show_info_from_task(selected_task):  # выводит описание выбранной задачи
+    if selected_task != 0:
+        con = sqlite3.connect("data/tasks_base.db")
+        cur = con.cursor()
+        actual_tasks = cur.execute("SELECT text, name from tasks WHERE id IN(?)", (selected_task,)).fetchone()
+        name_font = pygame.font.SysFont('arial', 48)
+        text_font = pygame.font.SysFont('arial', 24)
+        name = Text(screen, ps_width(30.5), ps_height(11.2), actual_tasks[1], name_font, color=BLACK)
+        text = Text(screen, ps_width(30.5), ps_height(22.4), actual_tasks[0], text_font, color=BLACK)
+        name.show()
+        text.show()
+
+
+def check_tasks(x, y):  # Проверяет выполнение задач и начинает новые
+    global tasks_connect, selected_task
+    tasks_cursor = tasks_connect.cursor()
+    start_tasks_coords = tasks_cursor.execute(
+        "Select start_x, start_y, id from tasks where progress IN(0)").fetchall()
+    end_tasks_coords = tasks_cursor.execute("Select end_x, end_y, id from tasks where progress IN(1)").fetchall()
+    # print(round(int(x), -1), round(int(y), -1))
+    for elem in end_tasks_coords:
+        if (round(int(x), -1), round(int(y), -1)) == (round(elem[0], -1), round(elem[1], -1)):
+            tasks_cursor.execute("UPDATE tasks SET progress = 2 WHERE id IN(?) AND progress IN(1)", (elem[2],))
+            tasks_connect.commit()
+            selected_task = 0
+            opening_tasks()
+    for elem in start_tasks_coords:
+        if (round(int(x), -1), round(int(y), -1)) == (round(elem[0], -1), round(elem[1], -1)):
+            tasks_cursor.execute("UPDATE tasks SET progress = 1 WHERE id IN(?) AND progress IN(0)", (elem[2],))
+            tasks_connect.commit()
+            selected_task = elem[2]
+            opening_tasks()
 
 
 def change_inventory_type_to_location(*args):
@@ -228,6 +268,7 @@ def change_inventory_type_to_location(*args):
         location.update_thinks(location.convert_thinks_to_object([], call=call))
     location.visibility = True
     location.hide_all_function()
+
 
 def opening_quests(*args):
     global type_window
@@ -371,18 +412,16 @@ def create_all_objects():
     btn.add_function(opening_inventory)
     objects_map.add_objects(btn)
 
-    cur = sqlite3.connect("data/tasks_base.db").cursor()
-    n = cur.execute("SELECT COUNT(id) FROM tasks").fetchone()
-    btn_tasks_x = 28
-    btn_tasks_y = 74
-    btn_tasks_width = 302
-    btn_tasks_height = 45
-    for i in range(1, n[0] + 1):
+    btn_tasks_x = ps_width(2.5)
+    btn_tasks_y = ps_height(10.7)
+    btn_tasks_width = ps_width(26.1)
+    btn_tasks_height = ps_height(6.3)
+    for i in range(11):
         image = get_tasks_image((btn_tasks_width, btn_tasks_height))
         btn = Button(screen, image, btn_tasks_x, btn_tasks_y, btn_tasks_width, btn_tasks_height)
         btn.add_function(change_num_task)
         objects_tasks.add_objects(btn)
-        btn_tasks_y += 45
+        btn_tasks_y += ps_height(6.3)
 
     file = open('map/description_map.txt', 'r')
     font = pygame.font.Font(None, zoom * 10)
@@ -636,6 +675,7 @@ while running:
         if player.moving:  # сдвигает игрока на расчитаные по времени координаты
             player.made_step()
             call = BOARD_MAP.get_call_in_bord((player.x, player.y))
+            check_tasks(player.x, player.y)
             if call is not None:
                 player.speed = player.start_speed * float(call.speed)
                 player.check_condition(call)
@@ -650,7 +690,6 @@ while running:
                         update_map()
                     location.update_call(call)
                     inventory.update_call(call)
-
 
     if type_window == 'inventory':
         inventory.show()
@@ -668,7 +707,6 @@ while running:
 
     if type_window == 'statistics':
         objects_statistics.show()
-
 
     if type_window != 'main_window':
         objects_map.show()

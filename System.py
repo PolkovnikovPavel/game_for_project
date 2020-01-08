@@ -618,7 +618,8 @@ class Window(Object):
     def add_object(self, object):
         object.visibility = self.visibility
 
-        x = (len(self.objects) - ((len(self.objects) // self.column_count) * self.column_count)) * (self.width // self.column_count) + self.x
+        x = (len(self.objects) - ((len(self.objects) // self.column_count) * self.column_count)) * (
+                self.width // self.column_count) + self.x
         if self.column_count != 1:
             y = (len(self.objects) // self.column_count) * object.height + self.shift_y
         else:
@@ -650,7 +651,6 @@ class Window(Object):
                     if event.button == 1:  # левое нажатие мыши
                         if object.check_tip(x, y) and object.visibility:
                             object.paging = True
-
 
         if event.type == pygame.MOUSEBUTTONUP:
             x, y = event.pos
@@ -687,7 +687,6 @@ class Window(Object):
 
                 if self.shift_y < -((((len(self.objects) // self.column_count)) - (
                         self.height // self.width_object))) * self.width_object:
-
                     self.shift_y = -((((len(self.objects) // self.column_count)) - (
                             self.height // self.width_object))) * self.width_object
             else:
@@ -725,7 +724,6 @@ class Group:
             self.all_objects = []
         for object in objects:
             del self.all_objects[self.all_objects.index(object)]
-
 
     def off_all(self):
         for object in self.all_objects:
@@ -895,7 +893,7 @@ class Player:
         if self.energy < 0:
             self.stop()
             self.energy = 100
-            self.game_time.skip_time(7, self)   # делать так чтоб игрок сразу ложился спать
+            self.game_time.skip_time(7, self)  # делать так чтоб игрок сразу ложился спать
             self.energy = 100
         elif self.energy > 100:
             self.energy = 100
@@ -1179,7 +1177,6 @@ class Thing(Button):
             function.set_bg_image('images/bg_for_function_9.png')
             self.functions.add_object(function)
 
-
     def open_functions(self):
         self.functions.visibility = True
         self.functions.show_all()
@@ -1197,12 +1194,12 @@ class Thing(Button):
         return f'{self.id}{sep}{self.count}{sep}{self.strength}'
 
     def click(self, *args):
-            try:
-                self.my_inventory.hide_all_function()
-                self.open_functions()
-            except:
-                print('не удалось запустить функцию')
-                return False
+        try:
+            self.my_inventory.hide_all_function()
+            self.open_functions()
+        except:
+            print('не удалось запустить функцию')
+            return False
 
     def show(self):
         self.functions.render()
@@ -1213,7 +1210,7 @@ class Thing(Button):
             if self.text_visibility:
                 text = self.font.render(str(self.count), 1, BLACK)
                 self.canvas.blit(text, (self.x + self.width - ps_width(4),
-                                    self.y + self.height - ps_height(4)))
+                                        self.y + self.height - ps_height(4)))
 
 
 class Inventory:
@@ -1264,9 +1261,8 @@ class Inventory:
                 separator = ':'
 
         self.all_thinks = self.convert_thinks_to_object(all_thinks, separator,
-                                ps_width(8.9), inventory, location, call=call)
+                                                        ps_width(8.9), inventory, location, call=call)
         self.showing_thinks = self.all_thinks
-
 
         x = ps_width(2) + 2
         y = ps_height(28.51)
@@ -1282,10 +1278,10 @@ class Inventory:
     def convert_thinks_to_object(self, all_thinks, sep=';', w=50, inventory=None,
                                  location=None, call=None):
         if any(map(lambda x: x is None, (inventory, location))):
-            inventory = self.inventory   # если хотя бы один равен None
+            inventory = self.inventory  # если хотя бы один равен None
             location = self.location
             if any(map(lambda x: x is None, (inventory, location))):
-                return   # если хотя бы один равен None
+                return  # если хотя бы один равен None
         ready_thinks = []
         font = pygame.font.Font(None, int(w // 2.7))
         self.heft = 0
@@ -1366,7 +1362,6 @@ class Inventory:
         for think in self.all_thinks:
             think.update_text()
 
-
     def change_thinks(self, think, count, call):
         if think.count <= 0:
             return
@@ -1385,8 +1380,6 @@ class Inventory:
             elif was != 'NONE' and call.lies == 'NONE':
                 del self.BOARD_MAP.board_with_marks[self.BOARD_MAP.board_with_marks.index(call)]
 
-
-
     def get_text_for_saving(self, sep=', '):
         if sep == ';':
             all_thinks = list(map(lambda x: x.get_text_for_saving(':'), self.all_thinks))
@@ -1402,7 +1395,7 @@ class Inventory:
         return text
 
     def get_ps_of_load(self):
-        ps =  int(100 * self.heft / self.player.max_heft)
+        ps = int(100 * self.heft / self.player.max_heft)
         if ps > 999:
             ps = 999
         return ps
@@ -1567,7 +1560,7 @@ class Function:
             x = self.x + self.w // 2 - self.button_size
             y = self.y + self.h - self.button_size
             image = get_free_image('images/action_button_1.png', (
-            self.button_size * 2, self.button_size))
+                self.button_size * 2, self.button_size))
             button = Button(self.canvas, image, x, y, self.button_size * 2,
                             self.button_size)
             button.add_function(self.eating)
@@ -1968,46 +1961,52 @@ class Tasks:
             self.canvas.blit(self.bg_image, (0, ps_height(5.6)))
 
     def show_all_tasks(self):
-        self.x = 28
-        self.y = 74
-        self.width = 302
-        self.height = 45
+        self.x = ps_width(2.5)
+        self.y = ps_height(10.7)
+        self.width = ps_width(26.1)
+        self.height = ps_height(6.3)
         self.story_task_font = pygame.font.SysFont('arial', 36)
         self.side_task_font = pygame.font.SysFont('arial', 30)
         self.con = sqlite3.connect("data/tasks_base.db")
         self.get_actual_story_tasks()
-        self.get_actual_side_tasks()
+        # self.get_actual_side_tasks()
 
     def get_actual_story_tasks(self):
+        count = 0
         cur = self.con.cursor()
         actual_tasks = cur.execute("SELECT * from tasks WHERE progress IN(1) AND type_id IN(1)").fetchall()
         for elem in actual_tasks:
-            self.id = id
-            self.type_id = elem[1]
-            self.name = elem[2]
-            self.text = elem[3]
-            self.completed = elem[4]
+            if count < 11:
+                self.id = id
+                self.type_id = elem[1]
+                self.name = elem[2]
+                self.text = elem[3]
+                self.completed = elem[4]
 
-            pygame.draw.rect(self.canvas, BROWN, (self.x, self.y, self.width, self.height), ps_height(0.6))
+                pygame.draw.rect(self.canvas, BROWN, (self.x, self.y, self.width, self.height), ps_height(0.6))
 
-            text1 = self.story_task_font.render(self.name, 1, BLACK)
-            self.canvas.blit(text1, (self.x + 5, self.y + 1))
+                text1 = self.story_task_font.render(self.name, 1, BLACK)
+                self.canvas.blit(text1, (self.x + ps_width(0.4), self.y + ps_height(0.14)))
 
-            self.y += 45
+                self.y += ps_height(6.3)
+                count += 1
+            else:
+                break
 
-    def get_actual_side_tasks(self):
-        cur = self.con.cursor()
-        past_tasks = cur.execute("SELECT * from tasks WHERE progress IN(1) AND type_id IN(2)").fetchall()
-        for elem in past_tasks:
-            self.id = id
-            self.type_id = elem[1]
-            self.name = elem[2]
-            self.text = elem[3]
-            self.completed = elem[4]
-
-            pygame.draw.rect(self.canvas, BROWN, (self.x, self.y, self.width, self.height), ps_height(0.6))
-
-            text1 = self.side_task_font.render(self.name, 1, BLACK)
-            self.canvas.blit(text1, (self.x + 5, self.y + 1))
-
-            self.y += 45
+    # def get_actual_side_tasks(self):
+    #    cur = self.con.cursor()
+    #    past_tasks = cur.execute("SELECT * from tasks WHERE progress IN(1) AND type_id IN(2)").fetchall()
+    #    for elem in past_tasks:
+    #        self.id = id
+    #        self.type_id = elem[1]
+    #        self.name = elem[2]
+    #        self.text = elem[3]
+    #        self.completed = elem[4]
+    #
+    #        pygame.draw.rect(self.canvas, BROWN, (self.x, self.y, self.width, self.height), ps_height(0.6))
+    #
+    #        text1 = self.side_task_font.render(self.name, 1, BLACK)
+    #        self.canvas.blit(text1, (self.x + ps_width(0.4), self.y + ps_height(0.14)))
+    #
+    #        self.y += ps_height(6.3)
+    #   названия побочных квестов должны были выводиться в конце и быть меньшего размера
