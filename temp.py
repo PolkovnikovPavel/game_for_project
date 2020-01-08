@@ -29,6 +29,7 @@ def start_new_game(*args):
     show_starting_slides(3, "bmp")
     start()
 
+
 def show_starting_slides(number, format):
     count = 2
     image = get_free_image("images\start_slides\start_slide_1." + format, (width, height))
@@ -45,6 +46,7 @@ def show_starting_slides(number, format):
                     start_slide.show()
                 count += 1
             pygame.display.flip()
+
 
 def continue_game(*args):
     if os.path.exists('map/description_map.txt'):
@@ -63,6 +65,7 @@ def searching_on_call(*args):
     location.update_cane_find(call)
     if call.lies != 'NONE' and was == 'NONE':
         BOARD_MAP.board_with_marks.append(call)
+
 
 def save():
     description_player = open('data/SaveGame.txt', 'w')
@@ -112,7 +115,7 @@ def save():
 
 
 def start(*args):
-    global type_window, inventory, location, BOARD_MAP, tasks, selected_task
+    global type_window, inventory, location, BOARD_MAP, tasks, selected_task, start_tasks_coords, end_tasks_coords
 
     objects_main.off_all()
     main_map.visibility = True
@@ -124,6 +127,10 @@ def start(*args):
     tasks = Tasks(screen, None)
     tasks.bg_image = get_bg_for_tasks((width, ps_height(83.2)))
     selected_task = 1
+    con = sqlite3.connect("data/tasks_base.db")
+    cur = con.cursor()
+    start_tasks_coords = cur.execute("Select start_x, start_y from tasks where progress IN(0, 1)").fetchall()
+    end_tasks_coords = cur.execute("Select end_x, end_y from tasks where progress IN(0, 1)").fetchall()
 
     file = open('map/description_map.txt', 'r')
     font = pygame.font.Font(None, zoom * 10)
@@ -140,6 +147,7 @@ def start(*args):
     update_image_map()
 
     type_window = 'main'
+
 
 def show_and_change_all_options():
     texts_of_options_player[0].change_text(int(player.exhaustion))
@@ -185,7 +193,7 @@ def opening_tasks(*args):
 def change_num_task(*args):
     global selected_task
     x, y = pygame.mouse.get_pos()
-    selected_task = ((y - 75) // 45) + 1
+    selected_task = ((y - ps_height(10.5)) // ps_height(6.3)) + 1
 
 
 def show_info_from_task(num):
@@ -194,10 +202,20 @@ def show_info_from_task(num):
     actual_tasks = cur.execute("SELECT text, name from tasks WHERE id IN(?)", (num,)).fetchone()
     name_font = pygame.font.SysFont('arial', 48)
     text_font = pygame.font.SysFont('arial', 24)
-    name = Text(screen, 350, 80, actual_tasks[1], name_font, color=BLACK)
-    text = Text(screen, 350, 160, actual_tasks[0], text_font, color=BLACK)
+    name = Text(screen, ps_width(30.5), ps_height(11.2), actual_tasks[1], name_font, color=BLACK)
+    text = Text(screen, ps_width(30.5), ps_height(22.4), actual_tasks[0], text_font, color=BLACK)
     name.show()
     text.show()
+
+
+def check_tasks(x, y):
+    global start_tasks_coords, end_tasks_coords
+    con = sqlite3.connect("data/tasks_base.db")
+    cur = con.cursor()
+    print(int(x), int(y))
+    for elem in end_tasks_coords:
+        if (int(x), int(y)) == elem:
+            opening_tasks()
 
 
 def change_inventory_type_to_location(*args):
@@ -215,6 +233,7 @@ def change_inventory_type_to_location(*args):
         location.update_thinks(location.convert_thinks_to_object([], call=call))
     location.visibility = True
     location.hide_all_function()
+
 
 def opening_quests(*args):
     global type_window
@@ -307,12 +326,12 @@ def create_all_objects():
     image = get_free_image('images/btn_start_main_2.png', (ps_height(37), ps_height(5)))
     image_2 = get_free_image('images/btn_start_main_click_2.png', (ps_height(37), ps_height(5)))
     btn_continue_game_main = Button(screen, image, ps_width(68), ps_height(37),
-                           ps_height(37), ps_height(5), continue_game, image_2)
+                                    ps_height(37), ps_height(5), continue_game, image_2)
 
     image = get_free_image('images/btn_new_start_main_2.png', (ps_height(37), ps_height(5)))
     image_2 = get_free_image('images/btn_new_start_main_click_2.png', (ps_height(37), ps_height(5)))
     btn_start_new_main = Button(screen, image, ps_width(68), ps_height(28),
-                            ps_height(37), ps_height(5), start_new_game, image_2)
+                                ps_height(37), ps_height(5), start_new_game, image_2)
 
     image = get_pygame_image(image_map)
     main_map = Object(screen, image, map_x, map_y, 3906 * zoom, 2047 * zoom)
@@ -359,17 +378,17 @@ def create_all_objects():
     objects_map.add_objects(btn)
 
     cur = sqlite3.connect("data/tasks_base.db").cursor()
-    n = cur.execute("SELECT COUNT(id) FROM tasks").fetchone()
-    btn_tasks_x = 28
-    btn_tasks_y = 74
-    btn_tasks_width = 302
-    btn_tasks_height = 45
+    n = cur.execute("SELECT COUNT(id) FROM tasks WHERE progress IN(1)").fetchone()
+    btn_tasks_x = ps_width(2.5)
+    btn_tasks_y = ps_height(10.7)
+    btn_tasks_width = ps_width(26.1)
+    btn_tasks_height = ps_height(6.3)
     for i in range(1, n[0] + 1):
         image = get_tasks_image((btn_tasks_width, btn_tasks_height))
         btn = Button(screen, image, btn_tasks_x, btn_tasks_y, btn_tasks_width, btn_tasks_height)
         btn.add_function(change_num_task)
         objects_tasks.add_objects(btn)
-        btn_tasks_y += 45
+        btn_tasks_y += ps_height(6.3)
 
     file = open('map/description_map.txt', 'r')
     font = pygame.font.Font(None, zoom * 10)
@@ -421,6 +440,7 @@ def create_all_objects():
     object = Object(screen, image, 0, 0, width, height)
     objects_statistics.add_objects(object)
 
+
 FPS = 100
 ratio = 3 / 5
 zoom = 2
@@ -447,8 +467,8 @@ main_map = None
 
 main_image_map = get_map((3906, 2047), 1)
 image_map = cat_image(main_image_map, (map_x_on_main_map, map_y_on_main_map,
-                      3906 - width_map - map_x_on_main_map,
-                      2047 - height_map - map_y_on_main_map))
+                                       3906 - width_map - map_x_on_main_map,
+                                       2047 - height_map - map_y_on_main_map))
 
 objects_main = Group()
 objects_map = Group()
@@ -622,6 +642,7 @@ while running:
         if player.moving:  # сдвигает игрока на расчитаные по времени координаты
             player.made_step()
             call = BOARD_MAP.get_call_in_bord((player.x, player.y))
+            check_tasks(player.x, player.y)
             if call is not None:
                 player.speed = player.start_speed * float(call.speed)
                 player.check_condition(call)
@@ -637,13 +658,19 @@ while running:
                     location.update_call(call)
                     inventory.update_call(call)
 
-
     if type_window == 'inventory':
         inventory.show()
         location.show()
         objects_inventory.show()
         if location.visibility:
             btn_searching.show()
+
+    if type_window == 'tasks':
+        global selected_task
+        tasks.show()
+        tasks.show_all_tasks()
+        objects_tasks.show()
+        show_info_from_task(selected_task)
 
     if type_window != 'main_window':
         objects_map.show()
