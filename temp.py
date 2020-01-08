@@ -29,22 +29,35 @@ def start_new_game(*args):
     show_starting_slides(3, "bmp")
     start()
 
+
 def show_starting_slides(number, format):
     count = 2
     image = get_free_image("images\start_slides\start_slide_1." + format, (width, height))
     start_slide = Object(screen, image, 0, 0, width, height)
-    start_slide.show()
-    pygame.display.flip()
+    all_sparks = pygame.sprite.Group()
+
+    image = get_free_image('images\explotion.png', (ps_height(2), ps_height(2)))
+    for _ in range(25):
+        dx = random.choice(range(-30, 30))
+        dy = random.choice(range(-10, 20))
+        Sparks(all_sparks, image, dx, dy)
+
     while count <= number + 1:
+        clock.tick(FPS)
+        screen.fill(BLACK)
+        all_sparks.update()
+
         for event in pygame.event.get():
             if 1 in pygame.key.get_pressed() or event.type == pygame.MOUSEBUTTONDOWN:
                 if count <= number:
                     slide_name = "images\start_slides\start_slide_" + str(count) + "." + format
                     image = get_free_image(slide_name, (width, height))
                     start_slide = Object(screen, image, 0, 0, width, height)
-                    start_slide.show()
                 count += 1
-            pygame.display.flip()
+
+        start_slide.show()
+        all_sparks.draw(screen)
+        pygame.display.flip()
 
 def continue_game(*args):
     if os.path.exists('map/description_map.txt'):

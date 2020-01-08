@@ -1,5 +1,5 @@
 import pygame
-import time, time, copy
+import time, time, copy, random
 import sqlite3
 from images.images import *
 
@@ -271,6 +271,33 @@ def ps_height(percent):
 def ps_width(percent):
     percent = percent / 100
     return int(width * percent)
+
+
+class Sparks(pygame.sprite.Sprite):
+    def __init__(self, all_sparks, image, dx, dy):
+        super().__init__(all_sparks)
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.dx = dx
+        self.dy = dy
+
+        self.velocity = [dx, dy]
+        pos = (random.choice(range(0, ps_width(100))),
+               random.choice(range(ps_height(80), ps_height(100))))
+        self.rect.x, self.rect.y = pos
+        self.gravity = 1
+
+    def update(self):
+        self.velocity[1] += self.gravity
+        # перемещаем частицу
+        self.rect.x += int(self.velocity[0])
+        self.rect.y += int(self.velocity[1])
+        # убиваем, если частица ушла за экран
+        if not self.rect.colliderect((-1, -1, width + 1, height + 1)):
+            pos = (random.choice(range(0, ps_width(100))),
+                   random.choice(range(ps_height(80), ps_height(100))))
+            self.rect.x, self.rect.y = pos
+            self.velocity = [self.dx, self.dy]
 
 
 class Object:
@@ -1855,7 +1882,19 @@ class GameTime:
     def skip_time(self, expectation, player):
         self.expectation_timer = time.time()
         t_game = 0
+
+        all_sparks = pygame.sprite.Group()
+        image = get_free_image('images\explotion.png', (ps_height(2), ps_height(2)))
+        for _ in range(25):
+            dx = random.choice(range(-30, 30))
+            dy = random.choice(range(-10, 20))
+            Sparks(all_sparks, image, dx, dy)
+
+        clock = pygame.time.Clock()
         while expectation >= 0:
+            clock.tick(100)
+            self.canvas.fill(BLACK)
+            all_sparks.update()
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     pass
@@ -1878,6 +1917,7 @@ class GameTime:
             self.canvas.blit(text, (ps_width(45), ps_height(35)))
             text = self.font.render(f'{int(t_game)} мин.', 1, WHITE)
             self.canvas.blit(text, (ps_width(45), ps_height(67)))
+            all_sparks.draw(self.canvas)
 
             expectation -= delte_t
 
