@@ -190,25 +190,32 @@ def opening_tasks(*args):
     type_window = 'tasks'
 
 
-def change_num_task(*args):
+def change_num_task(*args):  # определяет описание какой задачи нужно вывести
     global selected_task
-    x, y = pygame.mouse.get_pos()
-    selected_task = ((y - ps_height(10.5)) // ps_height(6.3)) + 1
-
-
-def show_info_from_task(num):
+    last_selected_task = selected_task
     con = sqlite3.connect("data/tasks_base.db")
     cur = con.cursor()
-    actual_tasks = cur.execute("SELECT text, name from tasks WHERE id IN(?)", (num,)).fetchone()
-    name_font = pygame.font.SysFont('arial', 48)
-    text_font = pygame.font.SysFont('arial', 24)
-    name = Text(screen, ps_width(30.5), ps_height(11.2), actual_tasks[1], name_font, color=BLACK)
-    text = Text(screen, ps_width(30.5), ps_height(22.4), actual_tasks[0], text_font, color=BLACK)
-    name.show()
-    text.show()
+    result = cur.execute("SELECT count(*) from tasks WHERE progress IN(1) AND type_id IN(1)").fetchone()
+    x, y = pygame.mouse.get_pos()
+    selected_task = ((y - ps_height(10.5)) // ps_height(6.3)) + 1
+    if selected_task > result[0]:
+        selected_task = last_selected_task
 
 
-def check_tasks(x, y):
+def show_info_from_task(selected_task):  # выводит описание выбранной задачи
+    if selected_task != 0:
+        con = sqlite3.connect("data/tasks_base.db")
+        cur = con.cursor()
+        actual_tasks = cur.execute("SELECT text, name from tasks WHERE id IN(?)", (selected_task,)).fetchone()
+        name_font = pygame.font.SysFont('arial', 48)
+        text_font = pygame.font.SysFont('arial', 24)
+        name = Text(screen, ps_width(30.5), ps_height(11.2), actual_tasks[1], name_font, color=BLACK)
+        text = Text(screen, ps_width(30.5), ps_height(22.4), actual_tasks[0], text_font, color=BLACK)
+        name.show()
+        text.show()
+
+
+def check_tasks(x, y):  # Проверяет выполнение задач и начинает новые
     global start_tasks_coords, end_tasks_coords
     con = sqlite3.connect("data/tasks_base.db")
     cur = con.cursor()
@@ -377,13 +384,11 @@ def create_all_objects():
     btn.add_function(opening_inventory)
     objects_map.add_objects(btn)
 
-    cur = sqlite3.connect("data/tasks_base.db").cursor()
-    n = cur.execute("SELECT COUNT(id) FROM tasks WHERE progress IN(1)").fetchone()
     btn_tasks_x = ps_width(2.5)
     btn_tasks_y = ps_height(10.7)
     btn_tasks_width = ps_width(26.1)
     btn_tasks_height = ps_height(6.3)
-    for i in range(1, n[0] + 1):
+    for i in range(11):
         image = get_tasks_image((btn_tasks_width, btn_tasks_height))
         btn = Button(screen, image, btn_tasks_x, btn_tasks_y, btn_tasks_width, btn_tasks_height)
         btn.add_function(change_num_task)
