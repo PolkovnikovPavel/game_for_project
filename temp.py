@@ -430,9 +430,10 @@ def create_all_objects():
     btn_searching = Button(screen, image, ps_width(68), ps_height(78), ps_width(14), ps_height(5))
     btn_searching.add_function(searching_on_call)
 
-    image = get_free_image('images/bg_for_tasks.png', (width, height))
-    object = Object(screen, image, 0, 0, width, height)
+    image = get_free_image('images/bg_for_tasks.png', (width, ps_height(83.2)))
+    object = Object(screen, image, 0, ps_height(5.6), width, height)
     objects_statistics.add_objects(object)
+
 
 FPS = 100
 ratio = 3 / 5
@@ -657,6 +658,17 @@ while running:
         objects_inventory.show()
         if location.visibility:
             btn_searching.show()
+
+    if type_window == 'tasks':
+        global selected_task
+        tasks.show()
+        tasks.show_all_tasks()
+        objects_tasks.show()
+        show_info_from_task(selected_task)
+
+    if type_window == 'statistics':
+        objects_statistics.show()
+
 
     if type_window != 'main_window':
         objects_map.show()
