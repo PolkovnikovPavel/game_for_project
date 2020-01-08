@@ -226,7 +226,7 @@ def check_tasks(x, y):  # Проверяет выполнение задач и 
     start_tasks_coords = tasks_cursor.execute(
         "Select start_x, start_y, id from tasks where progress IN(0)").fetchall()
     end_tasks_coords = tasks_cursor.execute("Select end_x, end_y, id from tasks where progress IN(1)").fetchall()
-    print(round(int(x), -1), round(int(y), -1))
+    # print(round(int(x), -1), round(int(y), -1))
     for elem in end_tasks_coords:
         if (round(int(x), -1), round(int(y), -1)) == (round(elem[0], -1), round(elem[1], -1)):
             tasks_cursor.execute("UPDATE tasks SET progress = 2 WHERE id IN(?) AND progress IN(1)", (elem[2],))
