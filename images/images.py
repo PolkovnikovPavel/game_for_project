@@ -129,6 +129,14 @@ def get_bg_for_thinks_in_inventory(size):
     image = pygame.image.fromstring(data, size, mode)
     return image
 
+def get_bg_for_tasks(size):
+    image = Image.open('images/bg_for_tasks.png')
+    image = image.resize(size, Image.ANTIALIAS)
+
+    mode = image.mode
+    data = image.tobytes()
+    image = pygame.image.fromstring(data, size, mode)
+    return image
 
 def get_image_btn_for_main_map_window(size):
     image = Image.open('images/btn_for_main_map_window.jpg')
@@ -139,6 +147,63 @@ def get_image_btn_for_main_map_window(size):
     image = pygame.image.fromstring(data, size, mode)
     return image
 
+def get_image_btn_for_main_map_window_1(size):
+    image = Image.open('images/btn_for_main_map_window_1.jpg')
+    image = image.resize(size, Image.ANTIALIAS)
+
+    mode = image.mode
+    data = image.tobytes()
+    image = pygame.image.fromstring(data, size, mode)
+    return image
+
+def get_image_btn_for_main_map_window_2(size):
+    image = Image.open('images/btn_for_main_map_window_2.jpg')
+    image = image.resize(size, Image.ANTIALIAS)
+
+    mode = image.mode
+    data = image.tobytes()
+    image = pygame.image.fromstring(data, size, mode)
+    return image
+
+
+def get_image_btn_for_main_map_window_3(size):
+    image = Image.open('images/btn_for_main_map_window_3.jpg')
+    image = image.resize(size, Image.ANTIALIAS)
+
+    mode = image.mode
+    data = image.tobytes()
+    image = pygame.image.fromstring(data, size, mode)
+    return image
+
+
+def get_image_btn_for_main_map_window_4(size):
+    image = Image.open('images/btn_for_main_map_window_4.jpg')
+    image = image.resize(size, Image.ANTIALIAS)
+
+    mode = image.mode
+    data = image.tobytes()
+    image = pygame.image.fromstring(data, size, mode)
+    return image
+
+
+def get_image_btn_for_main_map_window_5(size):
+    image = Image.open('images/btn_for_main_map_window_5.jpg')
+    image = image.resize(size, Image.ANTIALIAS)
+
+    mode = image.mode
+    data = image.tobytes()
+    image = pygame.image.fromstring(data, size, mode)
+    return image
+
+
+def get_image_btn_for_main_map_window_6(size):
+    image = Image.open('images/btn_for_main_map_window_6.jpg')
+    image = image.resize(size, Image.ANTIALIAS)
+
+    mode = image.mode
+    data = image.tobytes()
+    image = pygame.image.fromstring(data, size, mode)
+    return image
 
 def get_image_btn_for_main_map_window_1(size):
     image = Image.open('images/btn_for_main_map_window_1.jpg')
@@ -208,7 +273,6 @@ def get_image_btn_new_start_main(size):
     image = pygame.image.fromstring(data, size, mode)
     return image
 
-
 def get_bg_for_time(size):
     image = Image.open('images/bg_for_time.png')
     image = image.resize(size, Image.ANTIALIAS)
@@ -217,8 +281,6 @@ def get_bg_for_time(size):
     data = image.tobytes()
     image = pygame.image.fromstring(data, size, mode)
     return image
-
-
 
 def get_image_btn_new_start_main_click(size):
     image = Image.open('images/btn_new_start_main_click.png')
@@ -229,7 +291,6 @@ def get_image_btn_new_start_main_click(size):
     image = pygame.image.fromstring(data, size, mode)
     return image
 
-
 def get_image_bg_for_function(size):
     image = Image.open('images/bg_for_function.png')
     image = image.resize(size, Image.ANTIALIAS)
@@ -238,7 +299,6 @@ def get_image_bg_for_function(size):
     data = image.tobytes()
     image = pygame.image.fromstring(data, size, mode)
     return image
-
 
 def get_image_btn_inventory_on_location(size):
     image = Image.open('images/btn_inventory_on_location.png')
@@ -259,7 +319,6 @@ def get_image_btn_search(size):
     image = pygame.image.fromstring(data, size, mode)
     return image
 
-
 def get_map(size, mod=0):
     map = Image.open('images/map.png')
     map = map.resize(size, Image.ANTIALIAS)
@@ -269,7 +328,6 @@ def get_map(size, mod=0):
     data = map.tobytes()
     map = pygame.image.fromstring(data, size, mode)
     return map
-
 
 def get_mark_for_map(size, mod=0):
     image = Image.open('images/mark_for_map.png')
@@ -281,11 +339,18 @@ def get_mark_for_map(size, mod=0):
     image = pygame.image.fromstring(data, size, mode)
     return image
 
-
 def cat_image(img, border):
     img = ImageOps.crop(img, border)
     return img
 
+def get_tasks_image(size):
+    image = Image.open('images/bg_for_task.png')
+    image = image.resize(size, Image.ANTIALIAS)
+
+    mode = image.mode
+    data = image.tobytes()
+    image = pygame.image.fromstring(data, size, mode)
+    return image
 
 def get_pygame_image(image):
     mode = image.mode

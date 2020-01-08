@@ -1,5 +1,6 @@
-
-import sqlite3, time, copy
+import pygame
+import time, time, copy
+import sqlite3
 from images.images import *
 
 WHITE = (255, 255, 255)
@@ -8,6 +9,7 @@ RED = (255, 0, 0)
 GREEN = (0, 0, 255)
 LIGHT_GREEN = (27, 65, 16)
 BROWN = (74, 47, 4)
+GRAY = (128, 128, 128)
 width, height = 0, 0
 
 
@@ -148,7 +150,7 @@ def change_parametrs(id):
             4:3:0;42:3:0;40:2:0;39:2:0;36:6:0;35:6:0
             NONE
             NONE'''
-    elif id[0] ==25:
+    elif id[0] == 25:
         parametrs = '''25;(x,y);3;4;0.5
             4:3:0;42:3:0;40:2:0;39:2:0;36:6:0;35:9:0
             NONE
@@ -299,14 +301,14 @@ class Object:
 
 
 class Text(Object):
-    def __init__(self, canvas, x, y, text, font):
+    def __init__(self, canvas, x, y, text, font, color=WHITE):
         self.canvas = canvas
         self.x = x
         self.y = y
         self.text = str(text)
         self.font = font
-        self.color = WHITE
         self.visibility = True
+        self.color = color
         self.height = len(str(self.text).split('\n')) * ps_height(2)
 
     def change_text(self, new_text):
@@ -427,7 +429,6 @@ class Call:
                 strength = int(strength)
                 all_things_can_find[id] = [count, strength]
 
-
         for i in all_things_can_find.keys():
             id, count, strength = i, *all_things_can_find[i]
             if id in all_things_ling:
@@ -445,9 +446,6 @@ class Call:
         self.count -= 1
         self.lies = ';'.join(lies)
         self.can_find = ';'.join(can_find)
-
-
-
 
     def change_parametrs(self, parametrs):
         parametrs = parametrs.split()
@@ -476,7 +474,7 @@ class Call:
         if not self.visibility or x < 0 or y < 0 or x > 1700 or y > 1000:
             return
         pygame.draw.rect(self.canvas, self.color, (x, y, self.size, self.size), 1)
-        if self.id != '0' and str(self.id) != '1':
+        if self.id != '0':
             text = font.render(self.id, 1, WHITE)
             self.canvas.blit(text, (x + 2, y + 4))
 
@@ -653,7 +651,7 @@ class Window(Object):
 
     def pag(self, y):
         self.shift_y = y
-        if self.mod:   # следующие действия делают так,
+        if self.mod:  # следующие действия делают так,
             # чтоб объекты не выходили за границы экрана
             if self.shift_y > self.y:
                 self.shift_y = self.y
@@ -732,7 +730,6 @@ class Group:
                         if object.check_tip(x, y) and object.visibility:
                             object.paging = True
 
-
         if event.type == pygame.MOUSEBUTTONUP:
             x, y = event.pos
             for object in self.all_objects:
@@ -760,7 +757,7 @@ class Group:
 
 
 class Player:
-    def __init__(self, canvas,  x, y, game_time):
+    def __init__(self, canvas, x, y, game_time):
         self.canvas = canvas
         self.width = 50
         self.height = 50
@@ -815,7 +812,6 @@ class Player:
     def set_inventory(self, inventory):
         self.inventory = inventory
 
-
     def set_parametrs(self, parametrs):
         parametrs = parametrs.split('</>')[0].split(';')
 
@@ -848,7 +844,6 @@ class Player:
 
         self.game_time.num_time = int(parametrs[24])
         self.game_time.update_time()
-
 
     def set_cor(self, x, y):
         self.x = x
@@ -926,7 +921,6 @@ class Player:
         if self.exhaustion > 40:
             self.change_exhaustion -= 0.3
 
-
     def change_all_parametrs(self, delte_t):
         self.hunger -= self.change_hunger * delte_t
         self.water -= self.change_water * delte_t
@@ -936,7 +930,6 @@ class Player:
         self.radiation += self.change_radiation * delte_t
         self.temperature -= self.change_temperature * delte_t
         self.bleeding += self.change_bleeding * delte_t
-
 
     def move_to(self, x, y):
         if self.inventory.heft > self.max_heft:
@@ -1183,8 +1176,6 @@ class Thing(Button):
             except:
                 print('не удалось запустить функцию')
                 return False
-
-
 
     def show(self):
         self.functions.render()
@@ -1921,3 +1912,60 @@ class GameTime:
         text = self.font.render(self.get_string_of_time(), 1, LIGHT_GREEN)
         self.canvas.blit(text, (ps_width(44), ps_height(91)))
 
+
+class Tasks:
+    def __init__(self, canvas, bg_image):
+        self.canvas = canvas
+        self.bg_image = bg_image
+        self.con = sqlite3.connect("data/tasks_base.db")
+        self.visibility = False
+        self.text_font = pygame.font.SysFont('arial', 24)
+
+    def show(self):
+        if self.visibility:
+            self.canvas.blit(self.bg_image, (0, ps_height(5.6)))
+
+    def show_all_tasks(self):
+        self.x = 28
+        self.y = 74
+        self.width = 302
+        self.height = 45
+        self.story_task_font = pygame.font.SysFont('arial', 36)
+        self.side_task_font = pygame.font.SysFont('arial', 30)
+        self.con = sqlite3.connect("data/tasks_base.db")
+        self.get_actual_story_tasks()
+        self.get_actual_side_tasks()
+
+    def get_actual_story_tasks(self):
+        cur = self.con.cursor()
+        actual_tasks = cur.execute("SELECT * from tasks WHERE progress IN(1) AND type_id IN(1)").fetchall()
+        for elem in actual_tasks:
+            self.id = id
+            self.type_id = elem[1]
+            self.name = elem[2]
+            self.text = elem[3]
+            self.completed = elem[4]
+
+            pygame.draw.rect(self.canvas, BROWN, (self.x, self.y, self.width, self.height), ps_height(0.6))
+
+            text1 = self.story_task_font.render(self.name, 1, BLACK)
+            self.canvas.blit(text1, (self.x + 5, self.y + 1))
+
+            self.y += 45
+
+    def get_actual_side_tasks(self):
+        cur = self.con.cursor()
+        past_tasks = cur.execute("SELECT * from tasks WHERE progress IN(1) AND type_id IN(2)").fetchall()
+        for elem in past_tasks:
+            self.id = id
+            self.type_id = elem[1]
+            self.name = elem[2]
+            self.text = elem[3]
+            self.completed = elem[4]
+
+            pygame.draw.rect(self.canvas, BROWN, (self.x, self.y, self.width, self.height), ps_height(0.6))
+
+            text1 = self.side_task_font.render(self.name, 1, BLACK)
+            self.canvas.blit(text1, (self.x + 5, self.y + 1))
+
+            self.y += 45
