@@ -1265,14 +1265,15 @@ class Inventory:
         for think in all_thinks:
             if 'NONE' not in think:
                 id, count, strength = think.split(sep)
-                if sep == ':':
-                    strength = strength.split('</>')[0]
-                think = Thing(self.canvas, id, self.con, count, strength, w, font,
-                              inventory, location, self, call=call)
-                self.heft += think.heft * int(count)
-                self.groupe_for_thinks.add_objects(think.functions)
+                if int(count) > 0:
+                    if sep == ':':
+                        strength = strength.split('</>')[0]
+                    think = Thing(self.canvas, id, self.con, count, strength, w, font,
+                                  inventory, location, self, call=call)
+                    self.heft += think.heft * int(count)
+                    self.groupe_for_thinks.add_objects(think.functions)
 
-                ready_thinks.append(think)
+                    ready_thinks.append(think)
         return ready_thinks
 
     def update_call(self, call):
@@ -1305,16 +1306,17 @@ class Inventory:
 
     def append_think(self, think, my_think, count):
         if my_think not in self.all_thinks:
-            w = ps_width(8.9)
-            font = pygame.font.Font(None, int(w // 2.7))
+            if count != 0:
+                w = ps_width(8.9)
+                font = pygame.font.Font(None, int(w // 2.7))
 
-            my_think = Thing(self.canvas, think.id, self.con, count, think.strength, w,
-                             font, self.inventory, self.location, self, call=self.last_call)
-            self.groupe_for_thinks.add_objects(think.functions)
+                my_think = Thing(self.canvas, think.id, self.con, count, think.strength, w,
+                                 font, self.inventory, self.location, self, call=self.last_call)
+                self.groupe_for_thinks.add_objects(think.functions)
 
-            self.all_thinks.append(my_think)
-            self.showing_thinks = self.all_thinks
-            self.window.add_object(my_think)
+                self.all_thinks.append(my_think)
+                self.showing_thinks = self.all_thinks
+                self.window.add_object(my_think)
         else:
             my_think.count += count
             self.showing_thinks = self.all_thinks

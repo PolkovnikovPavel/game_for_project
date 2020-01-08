@@ -637,8 +637,6 @@ while running:
                     location.update_call(call)
                     inventory.update_call(call)
 
-    if type_window == 'statistics':
-        objects_statistics.show()
 
     if type_window == 'inventory':
         inventory.show()
@@ -646,13 +644,6 @@ while running:
         objects_inventory.show()
         if location.visibility:
             btn_searching.show()
-
-    if type_window == 'tasks':
-        global selected_task
-        tasks.show()
-        tasks.show_all_tasks()
-        objects_tasks.show()
-        show_info_from_task(selected_task)
 
     if type_window != 'main_window':
         objects_map.show()
