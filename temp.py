@@ -31,6 +31,7 @@ def start_new_game(*args):
     tasks_connect = sqlite3.connect("data/tasks_base.db")
     tasks_cursor = tasks_connect.cursor()
     tasks_cursor.execute("UPDATE tasks SET progress = 0")
+    tasks_cursor.execute("UPDATE tasks SET progress = 1 WHERE id IN(1)")
     tasks_connect.commit()
 
     start()
