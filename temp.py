@@ -27,6 +27,12 @@ def start_new_game(*args):
     description_player.write(text)
     description_player.close()
     show_starting_slides(3, "bmp")
+    # ставит все квесты в начальное положение
+    tasks_connect = sqlite3.connect("data/tasks_base.db")
+    tasks_cursor = tasks_connect.cursor()
+    tasks_cursor.execute("UPDATE tasks SET progress = 0")
+    tasks_connect.commit()
+
     start()
 
 
@@ -115,7 +121,7 @@ def save():
 
 
 def start(*args):
-    global type_window, inventory, location, BOARD_MAP, tasks, selected_task, start_tasks_coords, end_tasks_coords
+    global type_window, inventory, location, BOARD_MAP, tasks, selected_task, tasks_connect
 
     objects_main.off_all()
     main_map.visibility = True
@@ -126,11 +132,8 @@ def start(*args):
 
     tasks = Tasks(screen, None)
     tasks.bg_image = get_bg_for_tasks((width, ps_height(83.2)))
-    selected_task = 1
-    con = sqlite3.connect("data/tasks_base.db")
-    cur = con.cursor()
-    start_tasks_coords = cur.execute("Select start_x, start_y from tasks where progress IN(0, 1)").fetchall()
-    end_tasks_coords = cur.execute("Select end_x, end_y from tasks where progress IN(0, 1)").fetchall()
+    selected_task = 0
+    tasks_connect = sqlite3.connect("data/tasks_base.db")
 
     file = open('map/description_map.txt', 'r')
     font = pygame.font.Font(None, zoom * 10)
@@ -195,10 +198,12 @@ def change_num_task(*args):  # определяет описание какой 
     last_selected_task = selected_task
     con = sqlite3.connect("data/tasks_base.db")
     cur = con.cursor()
-    result = cur.execute("SELECT count(*) from tasks WHERE progress IN(1) AND type_id IN(1)").fetchone()
+    result = cur.execute("SELECT id from tasks WHERE progress IN(1) AND type_id IN(1)").fetchall()
     x, y = pygame.mouse.get_pos()
-    selected_task = ((y - ps_height(10.5)) // ps_height(6.3)) + 1
-    if selected_task > result[0]:
+    num = ((y - ps_height(10.5)) // ps_height(6.3))
+    if num < len(result):
+        selected_task = result[num][0]
+    else:
         selected_task = last_selected_task
 
 
@@ -216,12 +221,23 @@ def show_info_from_task(selected_task):  # выводит описание вы�
 
 
 def check_tasks(x, y):  # Проверяет выполнение задач и начинает новые
-    global start_tasks_coords, end_tasks_coords
-    con = sqlite3.connect("data/tasks_base.db")
-    cur = con.cursor()
-    print(int(x), int(y))
+    global tasks_connect, selected_task
+    tasks_cursor = tasks_connect.cursor()
+    start_tasks_coords = tasks_cursor.execute(
+        "Select start_x, start_y, id from tasks where progress IN(0)").fetchall()
+    end_tasks_coords = tasks_cursor.execute("Select end_x, end_y, id from tasks where progress IN(1)").fetchall()
+    print(round(int(x), -1), round(int(y), -1))
     for elem in end_tasks_coords:
-        if (int(x), int(y)) == elem:
+        if (round(int(x), -1), round(int(y), -1)) == (round(elem[0], -1), round(elem[1], -1)):
+            tasks_cursor.execute("UPDATE tasks SET progress = 2 WHERE id IN(?) AND progress IN(1)", (elem[2],))
+            tasks_connect.commit()
+            selected_task = 0
+            opening_tasks()
+    for elem in start_tasks_coords:
+        if (round(int(x), -1), round(int(y), -1)) == (round(elem[0], -1), round(elem[1], -1)):
+            tasks_cursor.execute("UPDATE tasks SET progress = 1 WHERE id IN(?) AND progress IN(0)", (elem[2],))
+            tasks_connect.commit()
+            selected_task = elem[2]
             opening_tasks()
 
 
