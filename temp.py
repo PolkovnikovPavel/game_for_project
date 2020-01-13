@@ -4,17 +4,17 @@ from System import *
 from images.images import *
 
 
-def exit(*args):
+def exit(*args):  # завершает программу
     global running
     running = False
 
 
-def the_end():
+def the_end():  # выполняется при смерти игрока
     start_new_game()
     opening_main_window()
 
 
-def start_new_game(*args):
+def start_new_game(*args):  # обнуляет все сохранения
     description_map = open('map/description_map.txt', 'w')
     with open('map/start_description_map.txt', 'r') as f:
         text = f.read()
@@ -26,7 +26,7 @@ def start_new_game(*args):
 21;30;0, 33;5;720, 26;2;0, 25;1;0, 28;1;19000, 4;40;0</>'''
     description_player.write(text)
     description_player.close()
-    show_starting_slides(3, "bmp")
+    show_starting_slides(10, "png")
     # ставит все квесты в начальное положение
     tasks_connect = sqlite3.connect("data/tasks_base.db")
     tasks_cursor = tasks_connect.cursor()
@@ -37,7 +37,7 @@ def start_new_game(*args):
     start()
 
 
-def show_starting_slides(number, format):
+def show_starting_slides(number, format):  # отображает слайды предистории
     count = 2
     image = get_free_image("images\start_slides\start_slide_1." + format, (width, height))
     start_slide = Object(screen, image, 0, 0, width, height)
@@ -59,7 +59,8 @@ def show_starting_slides(number, format):
                 if count <= number:
                     slide_name = "images\start_slides\start_slide_" + str(count) + "." + format
                     image = get_free_image(slide_name, (width, height))
-                    start_slide = Object(screen, image, 0, 0, width, height)
+                    start_slide.change_image(image)
+                    #start_slide = Object(screen, image, 0, 0, width, height)
                 count += 1
 
         start_slide.show()
@@ -67,14 +68,14 @@ def show_starting_slides(number, format):
         pygame.display.flip()
 
 
-def continue_game(*args):
+def continue_game(*args):  # запускает игру с текущими сохранениями
     if os.path.exists('map/description_map.txt'):
         start()
     else:
         start_new_game()
 
 
-def searching_on_call(*args):
+def searching_on_call(*args):  # ищит предметы на локации
     call = BOARD_MAP.get_call_in_bord((player.x, player.y))
     was = call.lies
     call.find_things()
@@ -86,7 +87,7 @@ def searching_on_call(*args):
         BOARD_MAP.board_with_marks.append(call)
 
 
-def save():
+def save():  # сохраняет текущии данные
     description_player = open('data/SaveGame.txt', 'w')
     text = ''
     text += str(int(player.exhaustion)) + ';'
@@ -133,7 +134,7 @@ def save():
     description_map.close()
 
 
-def start(*args):
+def start(*args):  # запуск игры
     global type_window, inventory, location, BOARD_MAP, tasks, selected_task, tasks_connect
 
     objects_main.off_all()
@@ -147,7 +148,7 @@ def start(*args):
     tasks.bg_image = get_bg_for_tasks((width, ps_height(83.2)))
     selected_task = 0
     tasks_connect = sqlite3.connect("data/tasks_base.db")
-
+    # открывает и загружает сохранения
     file = open('map/description_map.txt', 'r')
     font = pygame.font.Font(None, zoom * 10)
     BOARD_MAP = Board(screen, 3906 // size_cell, 2047 // size_cell, font,
@@ -165,7 +166,7 @@ def start(*args):
     type_window = 'main'
 
 
-def show_and_change_all_options():
+def show_and_change_all_options():  # обновляет все пораметры игрока
     texts_of_options_player[0].change_text(int(player.exhaustion))
     texts_of_options_player[1].change_text(int(player.hunger))
     texts_of_options_player[2].change_text(int(player.water))
@@ -177,10 +178,11 @@ def show_and_change_all_options():
     texts_of_options_player[8].change_text(player.temperature)
 
     for text in texts_of_options_player:
-        text.show()
+        text.show()  # отображение всех пораметров игрока
 
 
-def opening_inventory(*args):
+def opening_inventory(*args):  # функция одной из кнопок навигации
+    # меняет тип окна на инвентарь и закрывает всё лишнее
     global type_window
     inventory.visibility = True
     location.visibility = False
@@ -198,7 +200,8 @@ def opening_inventory(*args):
     type_window = 'inventory'
 
 
-def opening_tasks(*args):
+def opening_tasks(*args):  # функция одной из кнопок навигации
+    # меняет тип окна на задания и закрывает всё лишнее
     global type_window
     tasks.visibility = True
     location.visibility = False
@@ -254,7 +257,8 @@ def check_tasks(x, y):  # Проверяет выполнение задач и 
             opening_tasks()
 
 
-def change_inventory_type_to_location(*args):
+def change_inventory_type_to_location(*args):  # одна из кнопок навигации
+    # открывает описание локации и закрывает всё лишнее
     global type_window
     player.stop()
     type_window = 'inventory'
@@ -271,19 +275,15 @@ def change_inventory_type_to_location(*args):
     location.hide_all_function()
 
 
-def opening_quests(*args):
-    global type_window
-    player.stop()
-    type_window = 'quests'
-
-
-def opening_statistics(*args):
+def opening_statistics(*args):  # одна из кнопок навигации
+    # открывает статистику и закрывает всё лишнее
     global type_window
     player.stop()
     type_window = 'statistics'
 
 
-def opening_main_window(*args):
+def opening_main_window(*args):  # одна из кнопок навигации
+    # открывает главное меню старта
     global type_window
     player.stop()
     save()
@@ -292,7 +292,8 @@ def opening_main_window(*args):
     type_window = 'main_window'
 
 
-def open_map(*args):
+def open_map(*args):  # одна из кнопок навигации
+    # открывает основное окно
     global type_window
     inventory.visibility = False
     tasks.visibility = False
@@ -331,7 +332,7 @@ def update_map():  # сдвинуть отображаемую облость к
     update_image_map()
 
 
-def update_image_map():
+def update_image_map():  # меняет зум карты и сохраняет его
     global zoom_images
     if zoom_images[zoom] is not None:
         image = zoom_images[zoom][0]
@@ -348,7 +349,7 @@ def update_image_map():
     main_map.change_image(image)
 
 
-def create_all_objects():
+def create_all_objects():  # определяет все объекты
     global main_map, BOARD_MAP, parametrs, tool_bar_map, zoom_images, player
     global texts_of_options_player, btn_searching
 
@@ -476,7 +477,7 @@ def create_all_objects():
 
 
 FPS = 100
-ratio = 3 / 5
+ratio = 3 / 5  # отношение сторон окна приложения
 zoom = 2
 zoom_plus = 1.2
 timer_between_clicks = 0
@@ -504,17 +505,18 @@ image_map = cat_image(main_image_map, (map_x_on_main_map, map_y_on_main_map,
                       3906 - width_map - map_x_on_main_map,
                       2047 - height_map - map_y_on_main_map))
 
-objects_main = Group()
+objects_main = Group()  # создания груп для всех разделов
 objects_map = Group()
 objects_inventory = Group()
 objects_tasks = Group()
 objects_statistics = Group()
 
-type_window = 'main_window'
+type_window = 'main_window'  # опредиление типа окна
 
 pygame.init()
 
-display = pygame.display.Info()
+display = pygame.display.Info()  # установка окна прриложения в нужном месте под
+# любой физический размер экрана
 width, height = display.current_w - 75, display.current_h - 75
 if width * ratio <= height:
     height = int(width * ratio)
@@ -524,10 +526,10 @@ size = width, height
 print(size)
 os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (30, 30)
 screen = pygame.display.set_mode(size)
-install_size(size)
+install_size(size)  # инсталяция итоговых размеров окна для дальнейшей работы
 
-game_time = GameTime(0, screen)
-player = Player(screen, player_x, player_y, game_time)
+game_time = GameTime(0, screen)  # установка игрового времени
+player = Player(screen, player_x, player_y, game_time)  # создание игрока
 player.deathing = the_end
 inventory = Inventory(screen, None, player)
 location = Inventory(screen, None, player)
@@ -541,7 +543,7 @@ clock = pygame.time.Clock()
 x, y = 0, 0
 
 while running:
-    clock.tick(FPS)
+    clock.tick(FPS)  # поддержка фпс
     screen.fill(BLACK)
 
     for event in pygame.event.get():
@@ -551,7 +553,7 @@ while running:
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             x, y = event.pos
-            if type_window == 'main_window':
+            if type_window == 'main_window':  # проверка нажатия всех необходимых типов окна
                 objects_main.check(event)
             if type_window != 'main_window':
                 objects_map.check(event)
@@ -583,7 +585,7 @@ while running:
                     else:
                         update_image_map()
                 if event.button == 1:  # левое нажатие мыши
-                    if time.time() - timer_between_clicks < 0.3:
+                    if time.time() - timer_between_clicks < 0.3:  # проверка на двойное нажатие
                         new_x = ((x - map_x) / zoom_images[zoom][2]) + map_x_on_main_map
                         new_y = ((y - map_y) / zoom_images[zoom][2]) + map_y_on_main_map
                         player.move_to(new_x, new_y)
@@ -616,7 +618,7 @@ while running:
                 pass
 
         if event.type == pygame.MOUSEBUTTONUP:
-            x, y = event.pos
+            x, y = event.pos  # проверка отпускания клавиш всех необходимых типов окна
             if type_window == 'main_window':
                 objects_main.check(event)
             if type_window != 'main_window':
@@ -636,12 +638,12 @@ while running:
             moving_map = False
 
         if event.type == pygame.MOUSEMOTION:
-            x, y = event.pos
+            x, y = event.pos  # проверка движения всех необходимых типов окна
             shift_x = old_mouse_x - x
             shift_y = old_mouse_y - y
             old_mouse_x, old_mouse_y = x, y
 
-            if moving_map:
+            if moving_map:  # сдвиг игровой карты
                 map_x = map_x - shift_x
                 map_y = map_y - shift_y
                 if map_x > 0:
@@ -692,7 +694,7 @@ while running:
                     location.update_call(call)
                     inventory.update_call(call)
 
-    if type_window == 'inventory':
+    if type_window == 'inventory':  # отображение необходимого типа окна
         inventory.show()
         location.show()
         objects_inventory.show()
@@ -716,6 +718,6 @@ while running:
         game_time.show()
         game_time.update_time_on_real_time()
 
-    pygame.display.flip()
+    pygame.display.flip()  # обновление экрана
 
 pygame.quit()
