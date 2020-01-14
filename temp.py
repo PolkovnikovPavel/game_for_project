@@ -150,7 +150,7 @@ def start(*args):  # запуск игры
     tasks_connect = sqlite3.connect("data/tasks_base.db")
     # открывает и загружает сохранения
     file = open('map/description_map.txt', 'r')
-    font = pygame.font.Font(None, zoom * 10)
+    font = pygame.font.Font('C:\Windows\Fonts\Arial.ttf', zoom * 10)
     BOARD_MAP = Board(screen, 3906 // size_cell, 2047 // size_cell, font,
                       size_cell, parametrs=file.read())
     call = BOARD_MAP.get_call_in_bord((player.x, player.y))
@@ -228,8 +228,8 @@ def show_info_from_task(selected_task):  # выводит описание вы�
         con = sqlite3.connect("data/tasks_base.db")
         cur = con.cursor()
         actual_tasks = cur.execute("SELECT text, name from tasks WHERE id IN(?)", (selected_task,)).fetchone()
-        name_font = pygame.font.SysFont('arial', 48)
-        text_font = pygame.font.SysFont('arial', 24)
+        name_font = pygame.font.Font('C:\Windows\Fonts\Arial.ttf', 48)
+        text_font = pygame.font.Font('C:\Windows\Fonts\Arial.ttf', 24)
         name = Text(screen, ps_width(30.5), ps_height(11.2), actual_tasks[1], name_font, color=BLACK)
         text = Text(screen, ps_width(30.5), ps_height(22.4), actual_tasks[0], text_font, color=BLACK)
         name.show()
@@ -426,7 +426,7 @@ def create_all_objects():  # определяет все объекты
         btn_tasks_y += ps_height(6.3)
 
     file = open('map/description_map.txt', 'r')
-    font = pygame.font.Font(None, zoom * 10)
+    font = pygame.font.Font('C:\Windows\Fonts\Arial.ttf', zoom * 10)
     BOARD_MAP = Board(screen, 3906 // size_cell, 2047 // size_cell, font,
                       size_cell, parametrs=file.read())
     zoom_images = [None for i in range(6)]
@@ -436,7 +436,7 @@ def create_all_objects():  # определяет все объекты
     location.initialization(call.get_text_for_save(), inventory, location, call=call, BOARD_MAP=BOARD_MAP)
 
     texts_of_options_player = []
-    font = pygame.font.Font(None, ps_width(2.5))
+    font = pygame.font.Font('C:\Windows\Fonts\Arial.ttf', ps_width(1.7))
 
     text = Text(screen, ps_width(10), 15, player.exhaustion, font)
     texts_of_options_player.append(text)
