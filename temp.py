@@ -7,6 +7,7 @@ from images.images import *
 def exit(*args):  # завершает программу
     global running
     running = False
+    sound_press.play()
 
 
 def the_end():  # выполняется при смерти игрока
@@ -15,6 +16,8 @@ def the_end():  # выполняется при смерти игрока
 
 
 def start_new_game(*args):  # обнуляет все сохранения
+    sound_press.play()
+
     description_map = open('map/description_map.txt', 'w')
     with open('map/start_description_map.txt', 'r') as f:
         text = f.read()
@@ -57,10 +60,10 @@ def show_starting_slides(number, format):  # отображает слайды �
         for event in pygame.event.get():
             if 1 in pygame.key.get_pressed() or event.type == pygame.MOUSEBUTTONDOWN:
                 if count <= number:
+                    sound_press.play()
                     slide_name = "images\start_slides\start_slide_" + str(count) + "." + format
                     image = get_free_image(slide_name, (width, height))
                     start_slide.change_image(image)
-                    #start_slide = Object(screen, image, 0, 0, width, height)
                 count += 1
 
         start_slide.show()
@@ -69,6 +72,7 @@ def show_starting_slides(number, format):  # отображает слайды �
 
 
 def continue_game(*args):  # запускает игру с текущими сохранениями
+    sound_press.play()
     if os.path.exists('map/description_map.txt'):
         start()
     else:
@@ -184,6 +188,7 @@ def show_and_change_all_options():  # обновляет все пораметр
 def opening_inventory(*args):  # функция одной из кнопок навигации
     # меняет тип окна на инвентарь и закрывает всё лишнее
     global type_window
+    sound_opening_inventory.play()
     inventory.visibility = True
     location.visibility = False
     inventory.hide_all_function()
@@ -203,6 +208,7 @@ def opening_inventory(*args):  # функция одной из кнопок н�
 def opening_tasks(*args):  # функция одной из кнопок навигации
     # меняет тип окна на задания и закрывает всё лишнее
     global type_window
+    sound_filing_papers.play()
     tasks.visibility = True
     location.visibility = False
     player.stop()
@@ -260,6 +266,7 @@ def check_tasks(x, y):  # Проверяет выполнение задач и 
 def change_inventory_type_to_location(*args):  # одна из кнопок навигации
     # открывает описание локации и закрывает всё лишнее
     global type_window
+    sound_opening_location.play()
     player.stop()
     type_window = 'inventory'
     inventory.visibility = False
@@ -278,6 +285,7 @@ def change_inventory_type_to_location(*args):  # одна из кнопок на
 def opening_statistics(*args):  # одна из кнопок навигации
     # открывает статистику и закрывает всё лишнее
     global type_window
+    sound_filing_papers.play()
     player.stop()
     type_window = 'statistics'
 
@@ -285,6 +293,7 @@ def opening_statistics(*args):  # одна из кнопок навигации
 def opening_main_window(*args):  # одна из кнопок навигации
     # открывает главное меню старта
     global type_window
+    sound_press.play()
     player.stop()
     save()
     objects_main.on_all()
@@ -295,6 +304,7 @@ def opening_main_window(*args):  # одна из кнопок навигации
 def open_map(*args):  # одна из кнопок навигации
     # открывает основное окно
     global type_window
+    sound_filing_papers.play()
     inventory.visibility = False
     tasks.visibility = False
     type_window = 'main'
@@ -351,7 +361,8 @@ def update_image_map():  # меняет зум карты и сохраняет 
 
 def create_all_objects():  # определяет все объекты
     global main_map, BOARD_MAP, parametrs, tool_bar_map, zoom_images, player
-    global texts_of_options_player, btn_searching
+    global texts_of_options_player, btn_searching, sound_bg, sound_press
+    global sound_opening_location, sound_opening_inventory, sound_filing_papers
 
     image = get_bg_main_window(size)
     bg_main_window = Object(screen, image, 0, 0, *size)
@@ -475,6 +486,17 @@ def create_all_objects():  # определяет все объекты
     object = Object(screen, image, 0, ps_height(5.6), width, height)
     objects_statistics.add_objects(object)
 
+    sound_bg = pygame.mixer.Sound("data/sounds/bg_sound_1.wav")
+    sound_bg.set_volume(0.1)
+    sound_press = pygame.mixer.Sound("data/sounds/press_sound.wav")
+    sound_opening_location = pygame.mixer.Sound("data/sounds/opening_location.wav")
+    sound_opening_location.set_volume(0.5)
+    sound_opening_inventory = pygame.mixer.Sound("data/sounds/opening_inventory.wav")
+    sound_opening_inventory.set_volume(0.5)
+    sound_filing_papers = pygame.mixer.Sound("data/sounds/filing_papers.wav")
+    sound_filing_papers.set_volume(0.7)
+
+
 
 FPS = 100
 ratio = 3 / 5  # отношение сторон окна приложения
@@ -541,6 +563,8 @@ running = True
 moving_map = False
 clock = pygame.time.Clock()
 x, y = 0, 0
+sound_bg.play(loops=-1)
+
 
 while running:
     clock.tick(FPS)  # поддержка фпс
