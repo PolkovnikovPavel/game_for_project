@@ -304,7 +304,7 @@ def opening_main_window(*args):  # одна из кнопок навигации
 def open_map(*args):  # одна из кнопок навигации
     # открывает основное окно
     global type_window
-    sound_filing_papers.play()
+    sound_opening_map.play()
     inventory.visibility = False
     tasks.visibility = False
     type_window = 'main'
@@ -361,8 +361,7 @@ def update_image_map():  # меняет зум карты и сохраняет 
 
 def create_all_objects():  # определяет все объекты
     global main_map, BOARD_MAP, parametrs, tool_bar_map, zoom_images, player
-    global texts_of_options_player, btn_searching, sound_bg, sound_press
-    global sound_opening_location, sound_opening_inventory, sound_filing_papers
+    global texts_of_options_player, btn_searching
 
     image = get_bg_main_window(size)
     bg_main_window = Object(screen, image, 0, 0, *size)
@@ -486,17 +485,6 @@ def create_all_objects():  # определяет все объекты
     object = Object(screen, image, 0, ps_height(5.6), width, height)
     objects_statistics.add_objects(object)
 
-    sound_bg = pygame.mixer.Sound("data/sounds/bg_sound_1.wav")
-    sound_bg.set_volume(0.1)
-    sound_press = pygame.mixer.Sound("data/sounds/press_sound.wav")
-    sound_opening_location = pygame.mixer.Sound("data/sounds/opening_location.wav")
-    sound_opening_location.set_volume(0.5)
-    sound_opening_inventory = pygame.mixer.Sound("data/sounds/opening_inventory.wav")
-    sound_opening_inventory.set_volume(0.5)
-    sound_filing_papers = pygame.mixer.Sound("data/sounds/filing_papers.wav")
-    sound_filing_papers.set_volume(0.7)
-
-
 
 FPS = 100
 ratio = 3 / 5  # отношение сторон окна приложения
@@ -535,7 +523,6 @@ objects_statistics = Group()
 
 type_window = 'main_window'  # опредиление типа окна
 
-pygame.init()
 
 display = pygame.display.Info()  # установка окна прриложения в нужном месте под
 # любой физический размер экрана
@@ -557,13 +544,13 @@ inventory = Inventory(screen, None, player)
 location = Inventory(screen, None, player)
 
 create_all_objects()
-update_image_map()
 
 running = True
 moving_map = False
 clock = pygame.time.Clock()
 x, y = 0, 0
 sound_bg.play(loops=-1)
+update_image_map()
 
 
 while running:
@@ -589,6 +576,7 @@ while running:
                     btn_searching.status = True
             if type_window == 'tasks':
                 objects_tasks.check(event)
+                sound_press.play()
 
             if type_window == 'main':
                 if event.button == 1:

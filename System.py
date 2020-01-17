@@ -3,6 +3,8 @@ import time, time, copy, random
 import sqlite3
 from images.images import *
 
+pygame.init()
+
 WHITE = (255, 255, 255)  # установка цветов
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
@@ -10,6 +12,18 @@ GREEN = (0, 0, 255)
 LIGHT_GREEN = (27, 65, 16)
 BROWN = (74, 47, 4)
 GRAY = (128, 128, 128)
+
+sound_bg = pygame.mixer.Sound("data/sounds/bg_sound_1.wav")  # установка звуков
+sound_bg.set_volume(0.1)
+sound_press = pygame.mixer.Sound("data/sounds/press_sound.wav")
+sound_opening_location = pygame.mixer.Sound("data/sounds/opening_location.wav")
+sound_opening_location.set_volume(0.5)
+sound_opening_inventory = pygame.mixer.Sound("data/sounds/opening_inventory.wav")
+sound_opening_inventory.set_volume(0.5)
+sound_filing_papers = pygame.mixer.Sound("data/sounds/filing_papers.wav")
+sound_filing_papers.set_volume(0.7)
+sound_opening_map = pygame.mixer.Sound("data/sounds/opening_map.wav")
+sound_sip = pygame.mixer.Sound("data/sounds/sip.wav")
 
 width, height = 0, 0
 
@@ -333,7 +347,7 @@ class Object:  # любой граффический объект
             self.canvas.blit(self.image, (self.x, self.y))
 
 
-class Text(Object):
+class Text(Object):  # объект текст
     def __init__(self, canvas, x, y, text, font, color=WHITE):
         self.canvas = canvas
         self.x = x
@@ -512,7 +526,7 @@ class Call:  # клетка
             self.canvas.blit(text, (x + 2, y + 4))
 
 
-class Board:
+class Board:  # поле
     def __init__(self, canvas, width, height, font, cell_size=10, visibility=True, parametrs=None):
         self.canvas = canvas
         self.width = width
@@ -565,6 +579,7 @@ class Board:
                 self.board[i][j].draw(x, y, self.font)
 
     def made_unvisibility_call(self, x, y, width, height):
+        # скрывает все клетки которые не видно, для оптимизации
         for i in range(self.height):
             for j in range(self.width):
                 if (i >= y and i <= y + height and j >= x and j <= x + width):
@@ -593,7 +608,7 @@ class Board:
         return self.board[y][x]
 
 
-class Window(Object):
+class Window(Object):  # пролистывающиеся окно
     def __init__(self, canvas, image, x, y, width, height, column_count):
         self.canvas = canvas
         self.image = image
@@ -621,7 +636,7 @@ class Window(Object):
     def delete_all_objects(self):
         self.objects = []
 
-    def add_object(self, object):
+    def add_object(self, object):  # добавляет объект и меняет его позицию
         object.visibility = self.visibility
 
         x = (len(self.objects) - ((len(self.objects) // self.column_count) * self.column_count)) * (
@@ -633,7 +648,7 @@ class Window(Object):
         object.move_to(x, y)
         self.objects.append(object)
 
-    def check(self, event):
+    def check(self, event):  # проверка событий
         if not self.visibility:
             return
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -715,7 +730,7 @@ class Window(Object):
             object.show()
 
 
-class Group:
+class Group:  # группа
     def __init__(self):
         self.all_objects = []
         self.last_x, self.last_y = 0, 0
@@ -739,7 +754,7 @@ class Group:
         for object in self.all_objects:
             object.visibility = True
 
-    def check(self, event):
+    def check(self, event):  # проверка событий
         if not self.visibility:
             return
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -782,7 +797,7 @@ class Group:
                     if object.paging:
                         object.pag(object.shift_y - shift_y)
 
-    def show(self):
+    def show(self):  # отображение
         for object in self.all_objects:
             object.show()
 
@@ -843,7 +858,7 @@ class Player:
     def set_inventory(self, inventory):
         self.inventory = inventory
 
-    def set_parametrs(self, parametrs):
+    def set_parametrs(self, parametrs):  # установка параметров
         parametrs = parametrs.split('</>')[0].split(';')
 
         self.exhaustion = int(parametrs[0])
@@ -880,23 +895,23 @@ class Player:
         self.x = x
         self.y = y
 
-    def check_condition(self, call=None):
+    def check_condition(self, call=None):  # проверка всех параметров
         if call is not None:
             self.change_radiation = float(call.rad)
         self.change_exhaustion = -0.5
-        if self.hunger < 0:
+        if self.hunger < 0:  # голод
             self.hunger = 0
             self.change_exhaustion += 0.6
         elif self.hunger > 100:
             self.hunger = 100
 
-        if self.water < 0:
+        if self.water < 0:  # жажда
             self.water = 0
             self.change_exhaustion += 0.8
         elif self.water > 100:
             self.water = 100
 
-        if self.energy < 0:
+        if self.energy < 0:  # енергия
             self.stop()
             self.energy = 100
             self.game_time.skip_time(7, self)  # делать так чтоб игрок сразу ложился спать
@@ -904,14 +919,14 @@ class Player:
         elif self.energy > 100:
             self.energy = 100
 
-        if self.poison > 70:
+        if self.poison > 70:  # отровление
             self.change_exhaustion += 1.5
         elif self.poison > 40:
             self.change_exhaustion += 0.7
         elif self.poison < 0:
             self.poison = 0
 
-        if self.radiation < 0:
+        if self.radiation < 0:  # радиация
             self.radiation = 0
         elif self.radiation > 60:
             self.change_exhaustion += 1
@@ -920,7 +935,7 @@ class Player:
         elif self.radiation > 15:
             self.change_exhaustion += 0.4
 
-        if self.temperature > 38:
+        if self.temperature > 38:  # температура
             self.change_exhaustion += 1
             self.change_temperature += 0.1
         elif self.temperature > 37:
@@ -933,7 +948,7 @@ class Player:
             self.change_exhaustion += 0.1
             self.change_temperature -= 0.05
 
-        if self.bleeding < 0:
+        if self.bleeding < 0:  # кровотечение
             self.bleeding = 0
         elif self.bleeding > 70:
             self.change_exhaustion += 2.5
@@ -945,14 +960,14 @@ class Player:
             self.change_exhaustion += 0.1
             self.change_bleeding -= 0.2
 
-        if self.exhaustion > 100:
+        if self.exhaustion > 100:  # истощение(жизни)
             self.deathing()
         if self.exhaustion < 0:
             self.exhaustion = 0
         if self.exhaustion > 40:
             self.change_exhaustion -= 0.3
 
-    def change_all_parametrs(self, delte_t):
+    def change_all_parametrs(self, delte_t):  # обновить все параметры
         self.hunger -= self.change_hunger * delte_t
         self.water -= self.change_water * delte_t
         self.energy -= self.change_energy * delte_t
@@ -976,7 +991,6 @@ class Player:
         self.passed_x = 0
         self.passed_y = 0
 
-        #   self.time_for_way = self.path_length / self.speed
         self.game_time.start_thinktime()
         self.moving = True
 
@@ -1014,7 +1028,7 @@ class Player:
                                       (self.y - map_y_on_main_map) * zoom + map_y - self.height // 2))
 
 
-class Thing(Button):
+class Thing(Button):  # предмет
     def __init__(self, canvas, id, con, count, strength, w=ps_width(8.9),
                  font=None, inventory=None, location=None, my_inventory=None, call=None):
         self.canvas = canvas
@@ -1037,7 +1051,7 @@ class Thing(Button):
             WHERE id = {id}'''
         result = cur.execute(query).fetchone()
 
-        self.id = int(result[0])
+        self.id = int(result[0])  # установка параметров из базы даных
         self.name = result[1]
         self.heft = int(result[2])
         self.type = int(result[3])
@@ -1065,7 +1079,7 @@ class Thing(Button):
 
         self.speed = 0
         self.carrying_capacity = 0
-        if self.name == 'велосепед':
+        if self.name == 'велосепед':  # установка особых качеств
             self.speed = 20
             self.carrying_capacity = 70000
         elif self.name == 'чемодан':
@@ -1780,6 +1794,7 @@ class Function:
             self.my_inventory.player.effect_radiation = 0
 
     def eating(self, *args):
+        sound_sip.play()
         self.my_inventory.player.game_time.skip_time(0.2, self.my_inventory.player)
         self.my_inventory.change_thinks(self.thing, -1, self.call)
         self.my_inventory.player.hunger += self.thing.effect_hunger
